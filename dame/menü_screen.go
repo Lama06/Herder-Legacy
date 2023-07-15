@@ -1,25 +1,27 @@
 package dame
 
 import (
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-type menuScreen struct {
-	dame         *dameSpiel
-	title        *ui.Title
-	beschreibung *ui.Text
-	spielenKnopf *ui.Button
-	beendenKnopf *ui.Button
-	geschlossen  bool
+type menüScreen struct {
+	herderLegacy   herderlegacy.HerderLegacy
+	nächsterScreen func() herderlegacy.Screen
+	title          *ui.Title
+	beschreibung   *ui.Text
+	spielenKnopf   *ui.Button
+	beendenKnopf   *ui.Button
 }
 
-var _ screen = (*menuScreen)(nil)
+var _ herderlegacy.Screen = (*menüScreen)(nil)
 
-func newMenuScreen(dame *dameSpiel) *menuScreen {
-	screen := menuScreen{
-		dame: dame,
+func newMenüScreen(herderLegacy herderlegacy.HerderLegacy, nächsterScreen func() herderlegacy.Screen) *menüScreen {
+	screen := menüScreen{
+		herderLegacy:   herderLegacy,
+		nächsterScreen: nächsterScreen,
 		title: ui.NewTitle(ui.TitleConfig{
 			Position: ui.NewCenteredPosition(ui.Width/2, 100),
 			Text:     "Dame",
@@ -35,7 +37,7 @@ Hinweis: Teilweise kann es einige Sekunden dauern, um dem Zug des Lehrers zu ber
 			Position: ui.NewCenteredPosition(ui.Width/2, ui.Height-100),
 			Text:     "Lehrer auswählen",
 			Callback: func() {
-				dame.currentScreen = newLehrerAuswahlScreen(dame)
+				herderLegacy.OpenScreen(newLehrerAuswahlScreen(herderLegacy, nächsterScreen))
 			},
 		}),
 	}
@@ -49,28 +51,27 @@ Hinweis: Teilweise kann es einige Sekunden dauern, um dem Zug des Lehrers zu ber
 		},
 		Text: "Schließen",
 		Callback: func() {
-			screen.geschlossen = true
+			herderLegacy.OpenScreen(nächsterScreen())
 		},
 	})
 
 	return &screen
 }
 
-func (m *menuScreen) components() []ui.Component {
+func (m *menüScreen) components() []ui.Component {
 	return []ui.Component{m.title, m.beschreibung, m.spielenKnopf, m.beendenKnopf}
 }
 
-func (m *menuScreen) update() (beendet bool) {
+func (m *menüScreen) Update() {
 	for _, component := range m.components() {
 		component.Update()
 	}
 	if inpututil.IsKeyJustReleased(ebiten.KeyEscape) {
-		return true
+		m.herderLegacy.OpenScreen(m.nächsterScreen())
 	}
-	return m.geschlossen
 }
 
-func (m *menuScreen) draw(screen *ebiten.Image) {
+func (m *menüScreen) Draw(screen *ebiten.Image) {
 	screen.Fill(ui.BackgroundColor)
 	for _, component := range m.components() {
 		component.Draw(screen)

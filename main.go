@@ -3,7 +3,7 @@ package main
 import (
 	_ "embed"
 	"github.com/Lama06/Herder-Legacy/dame"
-	"github.com/Lama06/Herder-Legacy/spiel"
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -11,7 +11,7 @@ import (
 )
 
 type herderLegacy struct {
-	currentSpiel       spiel.Spiel
+	currentScreen      herderlegacy.Screen
 	verhinderteStunden float64
 }
 
@@ -27,18 +27,20 @@ func (h *herderLegacy) AddVerhinderteStunden(stunden float64) {
 	h.verhinderteStunden += stunden
 }
 
+func (h *herderLegacy) OpenScreen(screen herderlegacy.Screen) {
+	h.currentScreen = screen
+}
+
 func (h *herderLegacy) Update() error {
 	if runtime.GOOS == "js" && !ebiten.IsFullscreen() && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		ebiten.SetFullscreen(true)
 	}
-	if h.currentSpiel.Update() {
-		return ebiten.Termination
-	}
+	h.currentScreen.Update()
 	return nil
 }
 
 func (h *herderLegacy) Draw(screen *ebiten.Image) {
-	h.currentSpiel.Draw(screen)
+	h.currentScreen.Draw(screen)
 }
 
 func (h *herderLegacy) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -49,7 +51,7 @@ func main() {
 	ebiten.SetWindowTitle("Herder Legacy")
 	ebiten.SetFullscreen(true)
 	herderLegacy := herderLegacy{}
-	herderLegacy.currentSpiel = dame.NewDameSpiel(&herderLegacy)
+	herderLegacy.currentScreen = dame.NewFreierModusScreen(&herderLegacy, nil)
 	err := ebiten.RunGame(&herderLegacy)
 	if err != nil {
 		panic(err)

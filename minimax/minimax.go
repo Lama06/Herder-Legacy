@@ -1,5 +1,5 @@
 // Eine Implementierung des Minimax Algorithmuses: https://de.wikipedia.org/wiki/Minimax-Algorithmus
-package ai
+package minimax
 
 func min(a, b int) int {
 	if a < b {
@@ -26,7 +26,7 @@ type Zug interface {
 type Regeln any
 
 type Brett interface {
-	MoeglicheZuege(perspektive Spieler, regeln Regeln) []Zug
+	MöglicheZüge(perspektive Spieler, regeln Regeln) []Zug
 
 	Bewertung(perspektive Spieler, regeln Regeln) int
 }
@@ -46,13 +46,13 @@ func rekursiveBrettBewertung(
 		return brett.Bewertung(perspektive, regeln)
 	}
 
-	folgendeZuege := brett.MoeglicheZuege(amZug, regeln)
-	if len(folgendeZuege) == 0 {
+	folgendeZüge := brett.MöglicheZüge(amZug, regeln)
+	if len(folgendeZüge) == 0 {
 		return brett.Bewertung(perspektive, regeln)
 	}
 
 	var besterFolgenderZugBewertung int
-	for i, folgenderZug := range folgendeZuege {
+	for i, folgenderZug := range folgendeZüge {
 		folgenderZugBewerung := rekursiveBrettBewertung(
 			folgenderZug.Ergebnis(),
 			regeln,
@@ -73,13 +73,13 @@ func rekursiveBrettBewertung(
 	return besterFolgenderZugBewertung
 }
 
-func BesterNaechsterZug(brett Brett, regeln Regeln, amZug Spieler, maximaleTiefe int) (zug Zug, ok bool) {
+func BesterNächsterZug(brett Brett, regeln Regeln, amZug Spieler, maximaleTiefe int) (zug Zug, ok bool) {
 	if maximaleTiefe <= 0 {
 		panic("maximaleTiefe <= 0")
 	}
 
-	moeglicheZuege := brett.MoeglicheZuege(amZug, regeln)
-	if len(moeglicheZuege) == 0 {
+	möglicheZüge := brett.MöglicheZüge(amZug, regeln)
+	if len(möglicheZüge) == 0 {
 		return nil, false
 	}
 
@@ -87,16 +87,16 @@ func BesterNaechsterZug(brett Brett, regeln Regeln, amZug Spieler, maximaleTiefe
 		besterZug          Zug
 		besterZugBewertung int
 	)
-	for _, moeglicherZug := range moeglicheZuege {
+	for _, möglicherZug := range möglicheZüge {
 		zugErgebnisBewertung := rekursiveBrettBewertung(
-			moeglicherZug.Ergebnis(),
+			möglicherZug.Ergebnis(),
 			regeln,
 			amZug,
 			amZug.Gegner(),
 			maximaleTiefe-1,
 		)
 		if besterZug == nil || zugErgebnisBewertung > besterZugBewertung {
-			besterZug = moeglicherZug
+			besterZug = möglicherZug
 			besterZugBewertung = zugErgebnisBewertung
 		}
 	}

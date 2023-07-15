@@ -13,17 +13,17 @@ type feld byte
 const (
 	feldLeer feld = iota
 	feldSteinLehrer
-	feldSteinSchueler
+	feldSteinSchüler
 	feldDameLehrer
-	feldDameSchueler
+	feldDameSchüler
 )
 
 func stein(von spieler) feld {
 	switch von {
 	case spielerLehrer:
 		return feldSteinLehrer
-	case spielerSchueler:
-		return feldSteinSchueler
+	case spielerSchüler:
+		return feldSteinSchüler
 	default:
 		panic("unreachable")
 	}
@@ -33,8 +33,8 @@ func dame(von spieler) feld {
 	switch von {
 	case spielerLehrer:
 		return feldDameLehrer
-	case spielerSchueler:
-		return feldDameSchueler
+	case spielerSchüler:
+		return feldDameSchüler
 	default:
 		panic("unreachable")
 	}
@@ -46,12 +46,12 @@ func parseFeld(zeichen rune) (feld, error) {
 		return feldLeer, nil
 	case feldSteinLehrer.zeichen():
 		return feldSteinLehrer, nil
-	case feldSteinSchueler.zeichen():
-		return feldSteinSchueler, nil
+	case feldSteinSchüler.zeichen():
+		return feldSteinSchüler, nil
 	case feldDameLehrer.zeichen():
 		return feldDameLehrer, nil
-	case feldDameSchueler.zeichen():
-		return feldDameSchueler, nil
+	case feldDameSchüler.zeichen():
+		return feldDameSchüler, nil
 	default:
 		return 0, fmt.Errorf("ungültiges Zeichen für Feld: %c", zeichen)
 	}
@@ -63,25 +63,25 @@ func (f feld) zeichen() rune {
 		return '_'
 	case feldSteinLehrer:
 		return 'l'
-	case feldSteinSchueler:
+	case feldSteinSchüler:
 		return 's'
 	case feldDameLehrer:
 		return 'L'
-	case feldDameSchueler:
+	case feldDameSchüler:
 		return 'S'
 	default:
 		panic("unreachable")
 	}
 }
 
-func (f feld) eigentuemer() (eigentuemer spieler, ok bool) {
+func (f feld) eigentümer() (eigentümer spieler, ok bool) {
 	switch f {
 	case feldLeer:
 		return spielerLehrer, false
 	case feldSteinLehrer, feldDameLehrer:
 		return spielerLehrer, true
-	case feldSteinSchueler, feldDameSchueler:
-		return spielerSchueler, true
+	case feldSteinSchüler, feldDameSchüler:
+		return spielerSchüler, true
 	default:
 		panic("unreachable")
 	}
@@ -95,9 +95,9 @@ func (f feld) farbe() (clr color.Color, ok bool) {
 		return colornames.Lightblue, true
 	case feldDameLehrer:
 		return colornames.Darkblue, true
-	case feldSteinSchueler:
+	case feldSteinSchüler:
 		return colornames.Orange, true
-	case feldDameSchueler:
+	case feldDameSchüler:
 		return colornames.Darkorange, true
 	default:
 		panic("unreachable")

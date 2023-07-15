@@ -1,20 +1,20 @@
 package dame
 
-import "github.com/Lama06/Herder-Legacy/ai"
+import "github.com/Lama06/Herder-Legacy/minimax"
 
 type spieler bool
 
-var _ ai.Spieler = spielerLehrer
+var _ minimax.Spieler = spielerLehrer
 
 const (
-	spielerLehrer   spieler = false
-	spielerSchueler spieler = true
+	spielerLehrer  spieler = false
+	spielerSchüler spieler = true
 )
 
 func (s spieler) gegner() spieler {
 	return !s
 }
 
-func (s spieler) Gegner() ai.Spieler {
+func (s spieler) Gegner() minimax.Spieler {
 	return s.gegner()
 }

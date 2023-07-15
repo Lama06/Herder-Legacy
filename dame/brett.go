@@ -3,7 +3,7 @@ package dame
 import (
 	"errors"
 	"fmt"
-	"github.com/Lama06/Herder-Legacy/ai"
+	"github.com/Lama06/Herder-Legacy/minimax"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/colornames"
@@ -17,7 +17,7 @@ type brett struct {
 	felder          [][]feld
 }
 
-var _ ai.Brett = brett{}
+var _ minimax.Brett = brett{}
 
 func newLeeresBrett(zeilen, spalten int) brett {
 	felder := make([][]feld, zeilen)
@@ -127,14 +127,14 @@ func (b brett) umwandlungsZeile(perspektive spieler) int {
 	switch perspektive {
 	case spielerLehrer:
 		return b.zeilen - 1
-	case spielerSchueler:
+	case spielerSchüler:
 		return 0
 	default:
 		panic("unreachable")
 	}
 }
 
-func (b brett) felderZaehlen(gesucht feld) int {
+func (b brett) felderZählen(gesucht feld) int {
 	var anzahl int
 	for zeile := 0; zeile < b.zeilen; zeile++ {
 		for spalte := 0; spalte < b.spalten; spalte++ {
@@ -147,7 +147,7 @@ func (b brett) felderZaehlen(gesucht feld) int {
 }
 
 func (b brett) gewonnen(perspektive spieler, regeln regeln) bool {
-	return len(b.moeglicheZuege(perspektive.gegner(), regeln, false)) == 0
+	return len(b.möglicheZüge(perspektive.gegner(), regeln, false)) == 0
 }
 
 func (b brett) bewertung(perspektive spieler, regeln regeln) int {
@@ -165,13 +165,13 @@ func (b brett) bewertung(perspektive spieler, regeln regeln) int {
 		return -gewonnenBewertung
 	}
 
-	perspektiveBewertung := steinBewertung*b.felderZaehlen(stein(perspektive)) + dameBewertung*b.felderZaehlen(dame(perspektive))
-	gegnerBewertung := steinBewertung*b.felderZaehlen(stein(perspektive.gegner())) + dameBewertung*b.felderZaehlen(dame(perspektive.gegner()))
+	perspektiveBewertung := steinBewertung*b.felderZählen(stein(perspektive)) + dameBewertung*b.felderZählen(dame(perspektive))
+	gegnerBewertung := steinBewertung*b.felderZählen(stein(perspektive.gegner())) + dameBewertung*b.felderZählen(dame(perspektive.gegner()))
 
 	return perspektiveBewertung - gegnerBewertung
 }
 
-func (b brett) Bewertung(perspektive ai.Spieler, aiRegeln ai.Regeln) int {
+func (b brett) Bewertung(perspektive minimax.Spieler, aiRegeln minimax.Regeln) int {
 	return b.bewertung(perspektive.(spieler), aiRegeln.(regeln))
 }
 
@@ -201,12 +201,12 @@ func (b brett) feldPosition(
 func (b brett) draw(
 	screen *ebiten.Image,
 	brettX, brettY, maxBrettBreite, maxBrettHoehe float64,
-	ausgewaehltePosition *position,
+	hatAusgewähltePosition bool, ausgewähltePosition position,
 	regeln regeln,
 ) {
 	zugEndPositionen := make(map[position]struct{})
-	if ausgewaehltePosition != nil {
-		for _, moeglicherZug := range b.moeglicheZuegeMitStartPosition(*ausgewaehltePosition, regeln) {
+	if hatAusgewähltePosition {
+		for _, moeglicherZug := range b.möglicheZügeMitStartPosition(ausgewähltePosition, regeln) {
 			zugEndPositionen[moeglicherZug.endPosition()] = struct{}{}
 		}
 	}
@@ -220,7 +220,7 @@ func (b brett) draw(
 			feldX, feldY := b.feldPosition(pos, brettX, brettY, maxBrettBreite, maxBrettHoehe)
 
 			var clr color.Color
-			if ausgewaehltePosition != nil && *ausgewaehltePosition == pos {
+			if hatAusgewähltePosition && ausgewähltePosition == pos {
 				clr = colornames.Purple
 			} else if _, istZugEndPosition := zugEndPositionen[pos]; istZugEndPosition {
 				clr = colornames.Pink

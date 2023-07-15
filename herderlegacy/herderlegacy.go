@@ -1,4 +1,4 @@
-package spiel
+package herderlegacy
 
 import "github.com/hajimehoshi/ebiten/v2"
 
@@ -8,12 +8,12 @@ type HerderLegacy interface {
 	VerhinderteStunden() float64
 
 	AddVerhinderteStunden(stunden float64)
+
+	OpenScreen(screen Screen)
 }
 
-type Spiel interface {
-	Update() (beendet bool)
+type Screen interface {
+	Update()
 
 	Draw(screen *ebiten.Image)
 }
-
-type Constructor func(HerderLegacy) Spiel

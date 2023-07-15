@@ -1,40 +1,46 @@
 package dame
 
 import (
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type lehrerAuswahlScreen struct {
-	dame          *dameSpiel
-	title         *ui.Title
-	zurueckKnopf  *ui.Button
-	lehrerKnoepfe []*ui.Button
+	herderLegacy   herderlegacy.HerderLegacy
+	nächsterScreen func() herderlegacy.Screen
+	title          *ui.Title
+	zurückKnopf    *ui.Button
+	lehrerKnöpfe   []*ui.Button
 }
 
-var _ screen = (*lehrerAuswahlScreen)(nil)
+var _ herderlegacy.Screen = (*lehrerAuswahlScreen)(nil)
 
-func newLehrerAuswahlScreen(dame *dameSpiel) *lehrerAuswahlScreen {
-	lehrerKnoepfe := make([]*ui.Button, len(lehrerListe))
-	for i, lehrer := range lehrerListe {
+func newLehrerAuswahlScreen(
+	herderLegacy herderlegacy.HerderLegacy,
+	nächsterScreen func() herderlegacy.Screen,
+) *lehrerAuswahlScreen {
+	lehrerKnöpfe := make([]*ui.Button, len(alleLehrer))
+	for i, lehrer := range alleLehrer {
 		lehrer := lehrer
-		lehrerKnoepfe[i] = ui.NewButton(ui.ButtonConfig{
+		lehrerKnöpfe[i] = ui.NewButton(ui.ButtonConfig{
 			Position: ui.NewCenteredPosition(ui.Width/2, 200+80*float64(i)),
 			Text:     lehrer.name,
 			Callback: func() {
-				dame.currentScreen = newLehrerInfoScreen(dame, lehrer)
+				herderLegacy.OpenScreen(newLehrerInfoScreen(herderLegacy, nächsterScreen, lehrer))
 			},
 		})
 	}
 
 	return &lehrerAuswahlScreen{
-		dame: dame,
+		herderLegacy:   herderLegacy,
+		nächsterScreen: nächsterScreen,
 		title: ui.NewTitle(ui.TitleConfig{
 			Position: ui.NewCenteredPosition(ui.Width/2, 100),
 			Text:     "Lehrer auswählen",
 		}),
-		zurueckKnopf: ui.NewButton(ui.ButtonConfig{
+		zurückKnopf: ui.NewButton(ui.ButtonConfig{
 			Position: ui.Position{
 				X:                10,
 				Y:                10,
@@ -43,32 +49,31 @@ func newLehrerAuswahlScreen(dame *dameSpiel) *lehrerAuswahlScreen {
 			},
 			Text: "Zurück",
 			Callback: func() {
-				dame.currentScreen = newMenuScreen(dame)
+				herderLegacy.OpenScreen(nächsterScreen())
 			},
 		}),
-		lehrerKnoepfe: lehrerKnoepfe,
+		lehrerKnöpfe: lehrerKnöpfe,
 	}
 }
 
 func (l *lehrerAuswahlScreen) components() []ui.Component {
-	components := []ui.Component{l.title, l.zurueckKnopf}
-	for _, lehrerKnopf := range l.lehrerKnoepfe {
+	components := []ui.Component{l.title, l.zurückKnopf}
+	for _, lehrerKnopf := range l.lehrerKnöpfe {
 		components = append(components, lehrerKnopf)
 	}
 	return components
 }
 
-func (l *lehrerAuswahlScreen) update() (beendet bool) {
+func (l *lehrerAuswahlScreen) Update() {
 	for _, component := range l.components() {
 		component.Update()
 	}
 	if inpututil.IsKeyJustReleased(ebiten.KeyEscape) {
-		l.dame.currentScreen = newMenuScreen(l.dame)
+		l.herderLegacy.OpenScreen(newMenüScreen(l.herderLegacy, l.nächsterScreen))
 	}
-	return false
 }
 
-func (l *lehrerAuswahlScreen) draw(screen *ebiten.Image) {
+func (l *lehrerAuswahlScreen) Draw(screen *ebiten.Image) {
 	screen.Fill(ui.BackgroundColor)
 	for _, component := range l.components() {
 		component.Draw(screen)

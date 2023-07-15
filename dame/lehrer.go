@@ -28,8 +28,19 @@ func (l lehrer) personalPronomenSatzmitte() string {
 	return strings.ToLower(l.personalPronomen[:1]) + l.personalPronomen[1:]
 }
 
-var lehrerListe = []lehrer{
-	{
+var (
+	alleLehrer = []lehrer{
+		HerrPreuß,
+		HerrMünch,
+		HerrWeber,
+		FrauDahmen,
+		HerrJonaßon,
+		HerrFahnenmüller,
+		HerrSchwehner,
+		FrauKüpper,
+		FrauHannes,
+	}
+	HerrPreuß = lehrer{
 		name:             "Herr Preuß",
 		nameAkkusativ:    "Herrn Preuß",
 		personalPronomen: "Er",
@@ -48,8 +59,8 @@ Normale Steine sowie Damen können sich diagonal bewegen und diagonal schlagen.`
 		),
 		regeln:  internationaleRegeln,
 		aiTiefe: 5,
-	},
-	{
+	}
+	HerrMünch = lehrer{
 		name:             "Herr Münch",
 		nameAkkusativ:    "Herrn Münch",
 		personalPronomen: "Er",
@@ -75,8 +86,8 @@ Normale Steine sowie Damen können sich weiterhin diagonal bewegen und diagonal 
 		),
 		regeln:  internationaleRegeln,
 		aiTiefe: 4,
-	},
-	{
+	}
+	HerrWeber = lehrer{
 		name:             "Herr Weber",
 		nameAkkusativ:    "Herrn Weber",
 		personalPronomen: "Er",
@@ -95,8 +106,8 @@ Damen können sich nach oben, unten, links und rechts bewegen.`,
 		),
 		regeln:  altdeutscheRegeln,
 		aiTiefe: 5,
-	},
-	{
+	}
+	FrauDahmen = lehrer{
 		name:             "Frau Dahmen",
 		personalPronomen: "Sie",
 		info:             "Frau Dahmen spielt nur mit Damen ;)",
@@ -112,8 +123,8 @@ Damen können sich nach oben, unten, links und rechts bewegen.`,
 		),
 		regeln:  internationaleRegeln,
 		aiTiefe: 4,
-	},
-	{
+	}
+	HerrJonaßon = lehrer{
 		name:             "Herr Jonaßon",
 		nameAkkusativ:    "Herrn Jonaßon",
 		personalPronomen: "Er",
@@ -130,8 +141,8 @@ Damen können sich nach oben, unten, links und rechts bewegen.`,
 		),
 		regeln:  internationaleRegeln,
 		aiTiefe: 2,
-	},
-	{
+	}
+	HerrFahnenmüller = lehrer{
 		name:             "Herr Fahnenmüller",
 		nameAkkusativ:    "Herrn Fahnenmüller",
 		personalPronomen: "Er",
@@ -148,8 +159,8 @@ Damen können sich nach oben, unten, links und rechts bewegen.`,
 		),
 		regeln:  internationaleRegeln,
 		aiTiefe: 6,
-	},
-	{
+	}
+	HerrSchwehner = lehrer{
 		name:             "Herr Schwehmer",
 		nameAkkusativ:    "Herrn Schwehmer",
 		personalPronomen: "Er",
@@ -166,8 +177,8 @@ Damen können sich nach oben, unten, links und rechts bewegen.`,
 		),
 		regeln:  internationaleRegeln,
 		aiTiefe: 4,
-	},
-	{
+	}
+	FrauKüpper = lehrer{
 		name:             "Frau Küpper",
 		personalPronomen: "Sie",
 		info:             "Frau Küpper spielt auf einem 5x5 großen Brett mit altdeutschen Dameregeln.",
@@ -180,8 +191,8 @@ Damen können sich nach oben, unten, links und rechts bewegen.`,
 		),
 		regeln:  altdeutscheRegeln,
 		aiTiefe: 4,
-	},
-	{
+	}
+	FrauHannes = lehrer{
 		name:             "Frau Hannes",
 		personalPronomen: "Sie",
 		info:             "Frau Hannes spielt Dame mit normalen Regeln, aber im Querformat :)",
@@ -195,5 +206,5 @@ Damen können sich nach oben, unten, links und rechts bewegen.`,
 		),
 		regeln:  internationaleRegeln,
 		aiTiefe: 2,
-	},
-}
+	}
+)

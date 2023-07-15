@@ -2,14 +2,15 @@ package dame
 
 import (
 	"fmt"
-	"github.com/Lama06/Herder-Legacy/ai"
+	"github.com/Lama06/Herder-Legacy/minimax"
 	"strings"
 )
 
 type zugSchritt struct {
-	von, zu             position
-	geschlagenePosition *position
-	ergebnis            brett
+	von, zu                position
+	hatGeschlagenePosition bool
+	geschlagenePosition    position
+	ergebnis               brett
 }
 
 func (schritt1 zugSchritt) equals(schritt2 zugSchritt) bool {
@@ -17,12 +18,11 @@ func (schritt1 zugSchritt) equals(schritt2 zugSchritt) bool {
 		return false
 	}
 
-	if schritt1.geschlagenePosition == nil && schritt2.geschlagenePosition != nil {
+	if schritt1.hatGeschlagenePosition != schritt2.hatGeschlagenePosition {
 		return false
 	}
 
-	if schritt1.geschlagenePosition != nil &&
-		(schritt2.geschlagenePosition == nil || *schritt2.geschlagenePosition != *schritt1.geschlagenePosition) {
+	if schritt1.geschlagenePosition != schritt2.geschlagenePosition {
 		return false
 	}
 
@@ -45,7 +45,7 @@ ergebnis:
 
 type zug []zugSchritt
 
-var _ ai.Zug = zug{}
+var _ minimax.Zug = zug{}
 
 func (zug1 zug) equals(zug2 zug) bool {
 	if len(zug1) != len(zug2) {
@@ -65,7 +65,7 @@ func (z zug) ergebnis() brett {
 	return z[len(z)-1].ergebnis
 }
 
-func (z zug) Ergebnis() ai.Brett {
+func (z zug) Ergebnis() minimax.Brett {
 	return z.ergebnis()
 }
 
@@ -88,18 +88,18 @@ func (z zug) String() string {
 	return builder.String()
 }
 
-type zuege []zug
+type züge []zug
 
-func (zuege1 zuege) equals(zuege2 zuege) bool {
-	if len(zuege1) != len(zuege2) {
+func (züge1 züge) equals(züge2 züge) bool {
+	if len(züge1) != len(züge2) {
 		return false
 	}
 
-zuege1:
-	for _, zug1 := range zuege1 {
-		for _, zug2 := range zuege2 {
+züge1:
+	for _, zug1 := range züge1 {
+		for _, zug2 := range züge2 {
 			if zug1.equals(zug2) {
-				continue zuege1
+				continue züge1
 			}
 		}
 
@@ -109,7 +109,7 @@ zuege1:
 	return true
 }
 
-func (z zuege) String() string {
+func (z züge) String() string {
 	var builder strings.Builder
 	builder.WriteString("[\n")
 	for _, zug := range z {
@@ -120,7 +120,7 @@ func (z zuege) String() string {
 	return builder.String()
 }
 
-func (b brett) moeglicheSteinBewegenZuege(perspektive spieler, startPosition position, regeln regeln) zuege {
+func (b brett) möglicheSteinBewegenZüge(perspektive spieler, startPosition position, regeln regeln) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
@@ -129,7 +129,7 @@ func (b brett) moeglicheSteinBewegenZuege(perspektive spieler, startPosition pos
 		return nil
 	}
 
-	var moeglicheZuege zuege
+	var möglicheZüge züge
 
 	for bewegenRichtung := range regeln.steinBewegenRichtungen {
 		neuePosition := startPosition.add(
@@ -152,26 +152,26 @@ func (b brett) moeglicheSteinBewegenZuege(perspektive spieler, startPosition pos
 		neuesBrett := b.clone()
 		neuesBrett.setFeld(startPosition, feldLeer)
 		neuesBrett.setFeld(neuePosition, neuerStein)
-		moeglicherZug := zug{
+		möglicherZug := zug{
 			zugSchritt{
-				von:                 startPosition,
-				zu:                  neuePosition,
-				geschlagenePosition: nil,
-				ergebnis:            neuesBrett,
+				von:                    startPosition,
+				zu:                     neuePosition,
+				hatGeschlagenePosition: false,
+				ergebnis:               neuesBrett,
 			},
 		}
-		moeglicheZuege = append(moeglicheZuege, moeglicherZug)
+		möglicheZüge = append(möglicheZüge, möglicherZug)
 	}
 
-	return moeglicheZuege
+	return möglicheZüge
 }
 
-func (b brett) moeglicheSteinSchlagenZuege(
+func (b brett) möglicheSteinSchlagenZüge(
 	perspektive spieler,
 	startPosition position,
 	regeln regeln,
 	weiterschlagen bool,
-) zuege {
+) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
@@ -180,7 +180,7 @@ func (b brett) moeglicheSteinSchlagenZuege(
 		return nil
 	}
 
-	var moeglicheZuege zuege
+	var möglicheZüge züge
 
 	for schlagenRichtung := range regeln.steinSchlagenRichtungen(weiterschlagen) {
 		schlagenPosition := startPosition.add(
@@ -218,28 +218,29 @@ func (b brett) moeglicheSteinSchlagenZuege(
 		neuesBrett.setFeld(neuePosition, neuerStein)
 
 		ersterZugSchritt := zugSchritt{
-			von:                 startPosition,
-			zu:                  neuePosition,
-			geschlagenePosition: &schlagenPosition,
-			ergebnis:            neuesBrett,
+			von:                    startPosition,
+			zu:                     neuePosition,
+			hatGeschlagenePosition: true,
+			geschlagenePosition:    schlagenPosition,
+			ergebnis:               neuesBrett,
 		}
 
-		weiterschlagenZuege := neuesBrett.moeglicheSteinSchlagenZuege(perspektive, neuePosition, regeln, true)
-		if len(weiterschlagenZuege) == 0 {
-			moeglicherZug := zug{ersterZugSchritt}
-			moeglicheZuege = append(moeglicheZuege, moeglicherZug)
+		weiterschlagenZüge := neuesBrett.möglicheSteinSchlagenZüge(perspektive, neuePosition, regeln, true)
+		if len(weiterschlagenZüge) == 0 {
+			möglicherZug := zug{ersterZugSchritt}
+			möglicheZüge = append(möglicheZüge, möglicherZug)
 		} else {
-			for _, weiterschlagenZug := range weiterschlagenZuege {
-				moeglicherZug := append(zug{ersterZugSchritt}, weiterschlagenZug...)
-				moeglicheZuege = append(moeglicheZuege, moeglicherZug)
+			for _, weiterschlagenZug := range weiterschlagenZüge {
+				möglicherZug := append(zug{ersterZugSchritt}, weiterschlagenZug...)
+				möglicheZüge = append(möglicheZüge, möglicherZug)
 			}
 		}
 	}
 
-	return moeglicheZuege
+	return möglicheZüge
 }
 
-func (b brett) moeglicheDameBewegenZuege(perspektive spieler, startPosition position, regeln regeln) zuege {
+func (b brett) möglicheDameBewegenZüge(perspektive spieler, startPosition position, regeln regeln) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
@@ -248,7 +249,7 @@ func (b brett) moeglicheDameBewegenZuege(perspektive spieler, startPosition posi
 		return nil
 	}
 
-	var moeglicheZuege zuege
+	var möglicheZüge züge
 
 bewegenRichtungen:
 	for bewegenRichtung := range regeln.dameBewegenRichtungen {
@@ -268,27 +269,27 @@ bewegenRichtungen:
 			neuesBrett := b.clone()
 			neuesBrett.setFeld(startPosition, feldLeer)
 			neuesBrett.setFeld(neuePosition, dame(perspektive))
-			moeglicherZug := zug{
+			möglicherZug := zug{
 				zugSchritt{
-					von:                 startPosition,
-					zu:                  neuePosition,
-					geschlagenePosition: nil,
-					ergebnis:            neuesBrett,
+					von:                    startPosition,
+					zu:                     neuePosition,
+					hatGeschlagenePosition: false,
+					ergebnis:               neuesBrett,
 				},
 			}
-			moeglicheZuege = append(moeglicheZuege, moeglicherZug)
+			möglicheZüge = append(möglicheZüge, möglicherZug)
 		}
 	}
 
-	return moeglicheZuege
+	return möglicheZüge
 }
 
-func (b brett) moeglicheDameSchlagenZuege(
+func (b brett) möglicheDameSchlagenZüge(
 	perspektive spieler,
 	startPosition position,
 	regeln regeln,
 	weiterschlagen bool,
-) zuege {
+) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
@@ -297,7 +298,7 @@ func (b brett) moeglicheDameSchlagenZuege(
 		return nil
 	}
 
-	var moeglicheZuege zuege
+	var möglicheZüge züge
 
 schlagenRichtungen:
 	for schlagenRichtung := range regeln.dameSchlagenRichtungen(weiterschlagen) {
@@ -335,20 +336,21 @@ schlagenRichtungen:
 			neuesBrett.setFeld(neuePosition, dame(perspektive))
 
 			ersterZugSchritt := zugSchritt{
-				von:                 startPosition,
-				zu:                  neuePosition,
-				geschlagenePosition: &schlagenPosition,
-				ergebnis:            neuesBrett,
+				von:                    startPosition,
+				zu:                     neuePosition,
+				hatGeschlagenePosition: true,
+				geschlagenePosition:    schlagenPosition,
+				ergebnis:               neuesBrett,
 			}
 
-			weiterschlagenZuege := neuesBrett.moeglicheDameSchlagenZuege(perspektive, neuePosition, regeln, true)
-			if len(weiterschlagenZuege) == 0 {
-				moeglicherZug := zug{ersterZugSchritt}
-				moeglicheZuege = append(moeglicheZuege, moeglicherZug)
+			weiterschlagenZüge := neuesBrett.möglicheDameSchlagenZüge(perspektive, neuePosition, regeln, true)
+			if len(weiterschlagenZüge) == 0 {
+				möglicherZug := zug{ersterZugSchritt}
+				möglicheZüge = append(möglicheZüge, möglicherZug)
 			} else {
-				for _, weiterschlagenZug := range weiterschlagenZuege {
-					moeglicherZug := append(zug{ersterZugSchritt}, weiterschlagenZug...)
-					moeglicheZuege = append(moeglicheZuege, moeglicherZug)
+				for _, weiterschlagenZug := range weiterschlagenZüge {
+					möglicherZug := append(zug{ersterZugSchritt}, weiterschlagenZug...)
+					möglicheZüge = append(möglicheZüge, möglicherZug)
 				}
 			}
 
@@ -356,15 +358,15 @@ schlagenRichtungen:
 		}
 	}
 
-	return moeglicheZuege
+	return möglicheZüge
 }
 
-func (b brett) moeglicheZuege(perspektive spieler, regeln regeln, gewonnenUeberpruefen bool) zuege {
-	if gewonnenUeberpruefen && b.gewonnen(perspektive, regeln) {
+func (b brett) möglicheZüge(perspektive spieler, regeln regeln, gewonnenÜberprüfen bool) züge {
+	if gewonnenÜberprüfen && b.gewonnen(perspektive, regeln) {
 		return nil
 	}
 
-	var moeglicheZuege zuege
+	var möglicheZüge züge
 
 	for zeile := 0; zeile < b.zeilen; zeile++ {
 		for spalte := 0; spalte < b.spalten; spalte++ {
@@ -372,13 +374,13 @@ func (b brett) moeglicheZuege(perspektive spieler, regeln regeln, gewonnenUeberp
 				zeile:  zeile,
 				spalte: spalte,
 			}
-			moeglicheZuege = append(moeglicheZuege, b.moeglicheSteinSchlagenZuege(perspektive, startPosition, regeln, false)...)
-			moeglicheZuege = append(moeglicheZuege, b.moeglicheDameSchlagenZuege(perspektive, startPosition, regeln, false)...)
+			möglicheZüge = append(möglicheZüge, b.möglicheSteinSchlagenZüge(perspektive, startPosition, regeln, false)...)
+			möglicheZüge = append(möglicheZüge, b.möglicheDameSchlagenZüge(perspektive, startPosition, regeln, false)...)
 		}
 	}
 
-	if regeln.schlagZwang && len(moeglicheZuege) != 0 {
-		return moeglicheZuege
+	if regeln.schlagZwang && len(möglicheZüge) != 0 {
+		return möglicheZüge
 	}
 
 	for zeile := 0; zeile < b.zeilen; zeile++ {
@@ -387,38 +389,38 @@ func (b brett) moeglicheZuege(perspektive spieler, regeln regeln, gewonnenUeberp
 				zeile:  zeile,
 				spalte: spalte,
 			}
-			moeglicheZuege = append(moeglicheZuege, b.moeglicheSteinBewegenZuege(perspektive, startPosition, regeln)...)
-			moeglicheZuege = append(moeglicheZuege, b.moeglicheDameBewegenZuege(perspektive, startPosition, regeln)...)
+			möglicheZüge = append(möglicheZüge, b.möglicheSteinBewegenZüge(perspektive, startPosition, regeln)...)
+			möglicheZüge = append(möglicheZüge, b.möglicheDameBewegenZüge(perspektive, startPosition, regeln)...)
 		}
 	}
 
-	return moeglicheZuege
+	return möglicheZüge
 }
 
-func (b brett) moeglicheZuegeMitStartPosition(startPosition position, regeln regeln) zuege {
+func (b brett) möglicheZügeMitStartPosition(startPosition position, regeln regeln) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
 	feld := b.feld(startPosition)
-	eigentuemer, ok := feld.eigentuemer()
+	eigentümer, ok := feld.eigentümer()
 	if !ok {
 		return nil
 	}
-	moeglicheZuege := b.moeglicheZuege(eigentuemer, regeln, true)
-	var moeglicheZuegeMitStartPosition zuege
-	for _, moeglicherZug := range moeglicheZuege {
-		if moeglicherZug.startPosition() == startPosition {
-			moeglicheZuegeMitStartPosition = append(moeglicheZuegeMitStartPosition, moeglicherZug)
+	möglicheZüge := b.möglicheZüge(eigentümer, regeln, true)
+	var möglicheZügeMitStartPosition züge
+	for _, möglicherZug := range möglicheZüge {
+		if möglicherZug.startPosition() == startPosition {
+			möglicheZügeMitStartPosition = append(möglicheZügeMitStartPosition, möglicherZug)
 		}
 	}
-	return moeglicheZuegeMitStartPosition
+	return möglicheZügeMitStartPosition
 }
 
-func (b brett) MoeglicheZuege(perspektive ai.Spieler, aiRegeln ai.Regeln) []ai.Zug {
-	zuege := b.moeglicheZuege(perspektive.(spieler), aiRegeln.(regeln), true)
-	aiZuege := make([]ai.Zug, len(zuege))
-	for i, zug := range zuege {
-		aiZuege[i] = zug
+func (b brett) MöglicheZüge(perspektive minimax.Spieler, aiRegeln minimax.Regeln) []minimax.Zug {
+	züge := b.möglicheZüge(perspektive.(spieler), aiRegeln.(regeln), true)
+	aiZüge := make([]minimax.Zug, len(züge))
+	for i, zug := range züge {
+		aiZüge[i] = zug
 	}
-	return aiZuege
+	return aiZüge
 }

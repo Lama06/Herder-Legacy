@@ -1,7 +1,8 @@
 package dame
 
 import (
-	"github.com/Lama06/Herder-Legacy/ai"
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/minimax"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -14,17 +15,20 @@ const (
 	spielScreenBrettX         = 300
 	spielScreenBrettY         = 0
 	spielScreenBrettMaxBreite = ui.Width - spielScreenBrettX
-	spielScreenBrettMaxHoehe  = ui.Height
+	spielScreenBrettMaxHöhe   = ui.Height
 )
 
 type spielScreen struct {
-	dame   *dameSpiel
-	brett  brett
-	lehrer lehrer
+	herderLegacy   herderlegacy.HerderLegacy
+	nächsterScreen func(gewonnen bool) herderlegacy.Screen
+	lehrer         lehrer
+
+	brett brett
 
 	aufgebenKnopf *ui.Button
 
-	ausgewaehltePosition *position
+	hatAusgewähltePosition bool
+	ausgewähltePosition    position
 
 	verbeibendeZugSchritte []zugSchritt
 	aktuellerZugSchritt    *zugSchritt
@@ -33,13 +37,18 @@ type spielScreen struct {
 	geschlageneSteine []*bewegenderStein
 }
 
-var _ screen = (*spielScreen)(nil)
+var _ herderlegacy.Screen = (*spielScreen)(nil)
 
-func newSpielScreen(dame *dameSpiel, lehrer lehrer) *spielScreen {
+func newSpielScreen(
+	herderLegacy herderlegacy.HerderLegacy,
+	nächsterScreen func(gewonnen bool) herderlegacy.Screen,
+	lehrer lehrer,
+) *spielScreen {
 	return &spielScreen{
-		dame:   dame,
-		brett:  lehrer.anfangsBrett.clone(),
-		lehrer: lehrer,
+		herderLegacy:   herderLegacy,
+		nächsterScreen: nächsterScreen,
+		brett:          lehrer.anfangsBrett.clone(),
+		lehrer:         lehrer,
 		aufgebenKnopf: ui.NewButton(ui.ButtonConfig{
 			Position: ui.Position{
 				X:                10,
@@ -49,13 +58,13 @@ func newSpielScreen(dame *dameSpiel, lehrer lehrer) *spielScreen {
 			},
 			Text: "Aufgeben",
 			Callback: func() {
-				dame.currentScreen = newGameOverScreen(dame, lehrer, false)
+				herderLegacy.OpenScreen(nächsterScreen(false))
 			},
 		}),
 	}
 }
 
-func (s *spielScreen) zugAusfuehren() (zugLaeuft bool) {
+func (s *spielScreen) zugAusführen() (zugLäuft bool) {
 	if len(s.verbeibendeZugSchritte) == 0 && s.aktuellerZugSchritt == nil {
 		// Gerade wird kein Zug ausgeführt
 		return false
@@ -79,20 +88,20 @@ func (s *spielScreen) zugAusfuehren() (zugLaeuft bool) {
 		return false
 	}
 
-	naechsterZugSchritt := s.verbeibendeZugSchritte[0]
-	s.aktuellerZugSchritt = &naechsterZugSchritt
+	nächsterZugSchritt := s.verbeibendeZugSchritte[0]
+	s.aktuellerZugSchritt = &nächsterZugSchritt
 	s.verbeibendeZugSchritte = s.verbeibendeZugSchritte[1:]
 
-	feldSize := s.brett.feldSize(spielScreenBrettMaxBreite, spielScreenBrettMaxHoehe)
+	feldSize := s.brett.feldSize(spielScreenBrettMaxBreite, spielScreenBrettMaxHöhe)
 
-	if naechsterZugSchritt.geschlagenePosition != nil {
-		geschlagenesFeld := s.brett.feld(*naechsterZugSchritt.geschlagenePosition)
+	if nächsterZugSchritt.hatGeschlagenePosition {
+		geschlagenesFeld := s.brett.feld(nächsterZugSchritt.geschlagenePosition)
 		geschlagenScreenX, geschlagenScreenY := s.brett.feldPosition(
-			*naechsterZugSchritt.geschlagenePosition,
+			nächsterZugSchritt.geschlagenePosition,
 			spielScreenBrettX,
 			spielScreenBrettY,
 			spielScreenBrettMaxBreite,
-			spielScreenBrettMaxHoehe,
+			spielScreenBrettMaxHöhe,
 		)
 		s.geschlageneSteine = append(s.geschlageneSteine, &bewegenderStein{
 			feld:     geschlagenesFeld,
@@ -104,23 +113,23 @@ func (s *spielScreen) zugAusfuehren() (zugLaeuft bool) {
 			speed:    6,
 		})
 
-		s.brett.setFeld(*naechsterZugSchritt.geschlagenePosition, feldLeer)
+		s.brett.setFeld(nächsterZugSchritt.geschlagenePosition, feldLeer)
 	}
 
-	vonFeld := s.brett.feld(naechsterZugSchritt.von)
+	vonFeld := s.brett.feld(nächsterZugSchritt.von)
 	vonScreenX, vonScreenY := s.brett.feldPosition(
-		naechsterZugSchritt.von,
+		nächsterZugSchritt.von,
 		spielScreenBrettX,
 		spielScreenBrettY,
 		spielScreenBrettMaxBreite,
-		spielScreenBrettMaxHoehe,
+		spielScreenBrettMaxHöhe,
 	)
 	zuScreenX, zuScreenY := s.brett.feldPosition(
-		naechsterZugSchritt.zu,
+		nächsterZugSchritt.zu,
 		spielScreenBrettX,
 		spielScreenBrettY,
 		spielScreenBrettMaxBreite,
-		spielScreenBrettMaxHoehe,
+		spielScreenBrettMaxHöhe,
 	)
 	s.zugStein = &bewegenderStein{
 		feld:     vonFeld,
@@ -132,7 +141,7 @@ func (s *spielScreen) zugAusfuehren() (zugLaeuft bool) {
 		speed:    2,
 	}
 
-	s.brett.setFeld(naechsterZugSchritt.von, feldLeer)
+	s.brett.setFeld(nächsterZugSchritt.von, feldLeer)
 
 	return true
 }
@@ -144,92 +153,65 @@ func (s *spielScreen) handleClick(mausX, mausY int) {
 		spielScreenBrettX,
 		spielScreenBrettY,
 		spielScreenBrettMaxBreite,
-		spielScreenBrettMaxHoehe,
+		spielScreenBrettMaxHöhe,
 	)
 	if !ok {
-		s.ausgewaehltePosition = nil
+		s.hatAusgewähltePosition = false
 		return
 	}
 
-	if s.ausgewaehltePosition == nil {
+	if !s.hatAusgewähltePosition {
 		mausFeld := s.brett.feld(mausPosition)
-		feldEigentuemer, feldHatEigentuemer := mausFeld.eigentuemer()
-		if !feldHatEigentuemer || feldEigentuemer == spielerLehrer {
-			s.ausgewaehltePosition = nil
+		feldEigentümer, feldHatEigentümer := mausFeld.eigentümer()
+		if !feldHatEigentümer || feldEigentümer == spielerLehrer {
+			s.hatAusgewähltePosition = false
 			return
 		}
 
-		s.ausgewaehltePosition = &mausPosition
+		s.hatAusgewähltePosition = true
+		s.ausgewähltePosition = mausPosition
 		return
 	}
 
-	moeglicheZuege := s.brett.moeglicheZuegeMitStartPosition(*s.ausgewaehltePosition, s.lehrer.regeln)
-	s.ausgewaehltePosition = nil
+	möglicheZüge := s.brett.möglicheZügeMitStartPosition(s.ausgewähltePosition, s.lehrer.regeln)
+	s.hatAusgewähltePosition = false
 
-	for _, moeglicherZug := range moeglicheZuege {
-		if moeglicherZug.endPosition() == mausPosition {
-			lehrerAiZug, lehrerZugGefunden := ai.BesterNaechsterZug(
-				moeglicherZug.ergebnis(),
+	for _, möglicherZug := range möglicheZüge {
+		if möglicherZug.endPosition() == mausPosition {
+			lehrerAiZug, lehrerZugGefunden := minimax.BesterNächsterZug(
+				möglicherZug.ergebnis(),
 				s.lehrer.regeln,
 				spielerLehrer,
 				s.lehrer.aiTiefe,
 			)
 			if !lehrerZugGefunden {
-				s.brett = moeglicherZug.ergebnis()
+				s.brett = möglicherZug.ergebnis()
 				return
 			}
 			lehrerZug := lehrerAiZug.(zug)
 
-			for _, schritt := range moeglicherZug {
-				if schritt.geschlagenePosition != nil {
-					feldSize := s.brett.feldSize(spielScreenBrettMaxBreite, spielScreenBrettMaxHoehe)
-
-					geschlagenesFeld := s.brett.feld(*schritt.geschlagenePosition)
-
-					geschlagenScreenX, geschlagenScreenY := s.brett.feldPosition(
-						*schritt.geschlagenePosition,
-						spielScreenBrettX,
-						spielScreenBrettY,
-						spielScreenBrettMaxBreite,
-						spielScreenBrettMaxHoehe,
-					)
-
-					s.geschlageneSteine = append(s.geschlageneSteine, &bewegenderStein{
-						feld:     geschlagenesFeld,
-						currentX: geschlagenScreenX + feldSize/2,
-						currentY: geschlagenScreenY + feldSize/2,
-						targetX:  float64(rand.Intn(spielScreenBrettX)),
-						targetY:  float64(rand.Intn(ui.Height)),
-						radius:   feldSize * 0.35,
-						speed:    6,
-					})
-				}
-			}
-
-			s.brett = moeglicherZug.ergebnis()
 			s.aktuellerZugSchritt = nil
 			s.zugStein = nil
-			s.verbeibendeZugSchritte = lehrerZug
-
+			s.verbeibendeZugSchritte = append(möglicherZug, lehrerZug...)
 			return
 		}
 	}
 }
 
-func (s *spielScreen) update() (beendet bool) {
+func (s *spielScreen) Update() {
 	if inpututil.IsKeyJustReleased(ebiten.KeyEscape) {
-		s.dame.currentScreen = newGameOverScreen(s.dame, s.lehrer, false)
-		return false
+		s.herderLegacy.OpenScreen(s.nächsterScreen(false))
+		return
 	}
 
-	if s.brett.gewonnen(spielerSchueler, s.lehrer.regeln) {
-		s.dame.currentScreen = newGameOverScreen(s.dame, s.lehrer, true)
-		return false
+	if s.brett.gewonnen(spielerSchüler, s.lehrer.regeln) {
+		s.herderLegacy.OpenScreen(s.nächsterScreen(true))
+		return
 	}
 
 	if s.brett.gewonnen(spielerLehrer, s.lehrer.regeln) {
-		s.dame.currentScreen = newGameOverScreen(s.dame, s.lehrer, false)
-		return false
+		s.herderLegacy.OpenScreen(s.nächsterScreen(false))
+		return
 	}
 
 	s.aufgebenKnopf.Update()
@@ -242,32 +224,31 @@ func (s *spielScreen) update() (beendet bool) {
 		s.zugStein.update()
 	}
 
-	if zugLaeuft := s.zugAusfuehren(); zugLaeuft {
-		return false
+	if zugLäuft := s.zugAusführen(); zugLäuft {
+		return
 	}
 
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		s.handleClick(ebiten.CursorPosition())
-		return false
+		return
 	}
 
 	for _, touchId := range inpututil.AppendJustReleasedTouchIDs(nil) {
 		s.handleClick(inpututil.TouchPositionInPreviousTick(touchId))
-		return false
+		return
 	}
-
-	return false
 }
 
-func (s *spielScreen) draw(screen *ebiten.Image) {
+func (s *spielScreen) Draw(screen *ebiten.Image) {
 	screen.Fill(ui.BackgroundColor)
 	s.brett.draw(
 		screen,
 		spielScreenBrettX,
 		spielScreenBrettY,
 		spielScreenBrettMaxBreite,
-		spielScreenBrettMaxHoehe,
-		s.ausgewaehltePosition,
+		spielScreenBrettMaxHöhe,
+		s.hatAusgewähltePosition,
+		s.ausgewähltePosition,
 		s.lehrer.regeln,
 	)
 	for _, verlorenerStein := range s.geschlageneSteine {

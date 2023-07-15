@@ -1,6 +1,7 @@
 package dame
 
 import (
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -8,20 +9,25 @@ import (
 )
 
 type gameOverScreen struct {
-	dame         *dameSpiel
-	lehrer       lehrer
-	title        *ui.Title
-	info         *ui.Text
-	restartKnopf *ui.Button
-	beendenKnopf *ui.Button
-	beendet      bool
+	herderLegacy   herderlegacy.HerderLegacy
+	nächsterScreen func() herderlegacy.Screen
+	lehrer         lehrer
+	title          *ui.Title
+	info           *ui.Text
+	restartKnopf   *ui.Button
+	beendenKnopf   *ui.Button
 }
 
-var _ screen = (*gameOverScreen)(nil)
+var _ herderlegacy.Screen = (*gameOverScreen)(nil)
 
-func newGameOverScreen(dame *dameSpiel, lehrer lehrer, gewonnenn bool) *gameOverScreen {
+func newGameOverScreen(
+	herderLegacy herderlegacy.HerderLegacy,
+	nächsterScreen func() herderlegacy.Screen,
+	lehrer lehrer,
+	gewonnenn bool,
+) *gameOverScreen {
 	if gewonnenn {
-		dame.herderLegacy.AddVerhinderteStunden(3)
+		herderLegacy.AddVerhinderteStunden(3)
 	}
 
 	var titleText string
@@ -50,8 +56,9 @@ Versuche es nocheinmal und gewinne, damit %pronomenSatzmitte% weniger motiviert 
 	infoText = infoTextReplacer.Replace(infoText)
 
 	screen := gameOverScreen{
-		dame:   dame,
-		lehrer: lehrer,
+		herderLegacy:   herderLegacy,
+		nächsterScreen: nächsterScreen,
+		lehrer:         lehrer,
 		title: ui.NewTitle(ui.TitleConfig{
 			Position: ui.NewCenteredPosition(ui.Width/2, 300),
 			Text:     titleText,
@@ -74,7 +81,7 @@ Versuche es nocheinmal und gewinne, damit %pronomenSatzmitte% weniger motiviert 
 			},
 			Text: "Ein weitere Runde Dame spielen",
 			Callback: func() {
-				dame.currentScreen = newLehrerInfoScreen(dame, lehrer)
+				herderLegacy.OpenScreen(newLehrerInfoScreen(herderLegacy, nächsterScreen, lehrer))
 			},
 		}),
 	}
@@ -88,7 +95,7 @@ Versuche es nocheinmal und gewinne, damit %pronomenSatzmitte% weniger motiviert 
 		},
 		Text: "Dame beenden",
 		Callback: func() {
-			screen.beendet = true
+			herderLegacy.OpenScreen(nächsterScreen())
 		},
 	})
 
@@ -99,17 +106,16 @@ func (g *gameOverScreen) components() []ui.Component {
 	return []ui.Component{g.title, g.info, g.restartKnopf, g.beendenKnopf}
 }
 
-func (g *gameOverScreen) update() (beendet bool) {
+func (g *gameOverScreen) Update() {
 	for _, component := range g.components() {
 		component.Update()
 	}
 	if inpututil.IsKeyJustReleased(ebiten.KeyEscape) {
-		g.dame.currentScreen = newLehrerInfoScreen(g.dame, g.lehrer)
+		g.herderLegacy.OpenScreen(g.nächsterScreen())
 	}
-	return g.beendet
 }
 
-func (g *gameOverScreen) draw(screen *ebiten.Image) {
+func (g *gameOverScreen) Draw(screen *ebiten.Image) {
 	screen.Fill(ui.BackgroundColor)
 	for _, component := range g.components() {
 		component.Draw(screen)

@@ -16,7 +16,7 @@ func (r richtungVertikal) verschiebung(perspektive spieler) int {
 		switch perspektive {
 		case spielerLehrer:
 			return 1
-		case spielerSchueler:
+		case spielerSchüler:
 			return -1
 		default:
 			panic("unreachable")
@@ -25,7 +25,7 @@ func (r richtungVertikal) verschiebung(perspektive spieler) int {
 		switch perspektive {
 		case spielerLehrer:
 			return -1
-		case spielerSchueler:
+		case spielerSchüler:
 			return 1
 		default:
 			panic("unreachable")
@@ -51,7 +51,7 @@ func (r richtungHorizontal) verschiebung(perspektive spieler) int {
 		switch perspektive {
 		case spielerLehrer:
 			return 1
-		case spielerSchueler:
+		case spielerSchüler:
 			return -1
 		default:
 			panic("unreachable")
@@ -60,7 +60,7 @@ func (r richtungHorizontal) verschiebung(perspektive spieler) int {
 		switch perspektive {
 		case spielerLehrer:
 			return -1
-		case spielerSchueler:
+		case spielerSchüler:
 			return 1
 		default:
 			panic("unreachable")
