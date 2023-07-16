@@ -1,14 +1,14 @@
 package dame
 
-type richtungVertikal byte
+type RichtungVertikal byte
 
 const (
-	richtungVertikalVorne richtungVertikal = iota
+	richtungVertikalVorne RichtungVertikal = iota
 	richtungVertikalKeine
 	richtungVertikalHinten
 )
 
-func (r richtungVertikal) verschiebung(perspektive spieler) int {
+func (r RichtungVertikal) verschiebung(perspektive spieler) int {
 	switch r {
 	case richtungVertikalKeine:
 		return 0
@@ -35,15 +35,15 @@ func (r richtungVertikal) verschiebung(perspektive spieler) int {
 	}
 }
 
-type richtungHorizontal byte
+type RichtungHorizontal byte
 
 const (
-	richtungHorizontalLinks richtungHorizontal = iota
+	richtungHorizontalLinks RichtungHorizontal = iota
 	richtungHorizontalKeine
 	richtungHorizontalRechts
 )
 
-func (r richtungHorizontal) verschiebung(perspektive spieler) int {
+func (r RichtungHorizontal) verschiebung(perspektive spieler) int {
 	switch r {
 	case richtungHorizontalKeine:
 		return 0
@@ -70,98 +70,98 @@ func (r richtungHorizontal) verschiebung(perspektive spieler) int {
 	}
 }
 
-type richtung struct {
-	horizontal richtungHorizontal
-	vertikal   richtungVertikal
+type Richtung struct {
+	Horizontal RichtungHorizontal
+	Vertikal   RichtungVertikal
 }
 
 var (
-	richtungenDiagonalVorne = map[richtung]struct{}{
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalVorne,
+	RichtungenDiagonalVorne = map[Richtung]struct{}{
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalVorne,
-		}: {},
-	}
-	richtungenDiagonal = map[richtung]struct{}{
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalVorne,
-		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalVorne,
-		}: {},
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalHinten,
-		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalHinten,
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
 	}
-	richtungenSeiteDiagonalUndVorne = map[richtung]struct{}{
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalKeine,
+	RichtungenDiagonal = map[Richtung]struct{}{
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalKeine,
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalVorne,
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalHinten,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalVorne,
-		}: {},
-		richtung{
-			horizontal: richtungHorizontalKeine,
-			vertikal:   richtungVertikalVorne,
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalHinten,
 		}: {},
 	}
-	richtungenAlle = map[richtung]struct{}{
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalVorne,
+	RichtungenSeiteDiagonalUndVorne = map[Richtung]struct{}{
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalKeine,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalKeine,
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalKeine,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalLinks,
-			vertikal:   richtungVertikalHinten,
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalKeine,
-			vertikal:   richtungVertikalVorne,
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalKeine,
-			vertikal:   richtungVertikalKeine,
+		Richtung{
+			Horizontal: richtungHorizontalKeine,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalKeine,
-			vertikal:   richtungVertikalHinten,
+	}
+	RichtungenAlle = map[Richtung]struct{}{
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalVorne,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalVorne,
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalKeine,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalKeine,
+		Richtung{
+			Horizontal: richtungHorizontalLinks,
+			Vertikal:   richtungVertikalHinten,
 		}: {},
-		richtung{
-			horizontal: richtungHorizontalRechts,
-			vertikal:   richtungVertikalHinten,
+		Richtung{
+			Horizontal: richtungHorizontalKeine,
+			Vertikal:   richtungVertikalVorne,
+		}: {},
+		Richtung{
+			Horizontal: richtungHorizontalKeine,
+			Vertikal:   richtungVertikalKeine,
+		}: {},
+		Richtung{
+			Horizontal: richtungHorizontalKeine,
+			Vertikal:   richtungVertikalHinten,
+		}: {},
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalVorne,
+		}: {},
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalKeine,
+		}: {},
+		Richtung{
+			Horizontal: richtungHorizontalRechts,
+			Vertikal:   richtungVertikalHinten,
 		}: {},
 	}
 )

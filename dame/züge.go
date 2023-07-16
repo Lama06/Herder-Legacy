@@ -2,15 +2,16 @@ package dame
 
 import (
 	"fmt"
-	"github.com/Lama06/Herder-Legacy/minimax"
 	"strings"
+
+	"github.com/Lama06/Herder-Legacy/minimax"
 )
 
 type zugSchritt struct {
 	von, zu                position
 	hatGeschlagenePosition bool
 	geschlagenePosition    position
-	ergebnis               brett
+	ergebnis               Brett
 }
 
 func (schritt1 zugSchritt) equals(schritt2 zugSchritt) bool {
@@ -61,7 +62,7 @@ func (zug1 zug) equals(zug2 zug) bool {
 	return true
 }
 
-func (z zug) ergebnis() brett {
+func (z zug) ergebnis() Brett {
 	return z[len(z)-1].ergebnis
 }
 
@@ -120,7 +121,7 @@ func (z züge) String() string {
 	return builder.String()
 }
 
-func (b brett) möglicheSteinBewegenZüge(perspektive spieler, startPosition position, regeln regeln) züge {
+func (b Brett) möglicheSteinBewegenZüge(perspektive spieler, startPosition position, regeln ZugRegeln) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
@@ -131,10 +132,10 @@ func (b brett) möglicheSteinBewegenZüge(perspektive spieler, startPosition pos
 
 	var möglicheZüge züge
 
-	for bewegenRichtung := range regeln.steinBewegenRichtungen {
+	for bewegenRichtung := range regeln.SteinBewegenRichtungen {
 		neuePosition := startPosition.add(
-			bewegenRichtung.vertikal.verschiebung(perspektive),
-			bewegenRichtung.horizontal.verschiebung(perspektive),
+			bewegenRichtung.Vertikal.verschiebung(perspektive),
+			bewegenRichtung.Horizontal.verschiebung(perspektive),
 		)
 		if !neuePosition.valid(b.zeilen, b.spalten) {
 			continue
@@ -166,10 +167,10 @@ func (b brett) möglicheSteinBewegenZüge(perspektive spieler, startPosition pos
 	return möglicheZüge
 }
 
-func (b brett) möglicheSteinSchlagenZüge(
+func (b Brett) möglicheSteinSchlagenZüge(
 	perspektive spieler,
 	startPosition position,
-	regeln regeln,
+	regeln ZugRegeln,
 	weiterschlagen bool,
 ) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
@@ -184,8 +185,8 @@ func (b brett) möglicheSteinSchlagenZüge(
 
 	for schlagenRichtung := range regeln.steinSchlagenRichtungen(weiterschlagen) {
 		schlagenPosition := startPosition.add(
-			schlagenRichtung.vertikal.verschiebung(perspektive),
-			schlagenRichtung.horizontal.verschiebung(perspektive),
+			schlagenRichtung.Vertikal.verschiebung(perspektive),
+			schlagenRichtung.Horizontal.verschiebung(perspektive),
 		)
 		if !schlagenPosition.valid(b.zeilen, b.spalten) {
 			continue
@@ -196,8 +197,8 @@ func (b brett) möglicheSteinSchlagenZüge(
 		}
 
 		neuePosition := schlagenPosition.add(
-			schlagenRichtung.vertikal.verschiebung(perspektive),
-			schlagenRichtung.horizontal.verschiebung(perspektive),
+			schlagenRichtung.Vertikal.verschiebung(perspektive),
+			schlagenRichtung.Horizontal.verschiebung(perspektive),
 		)
 		if !neuePosition.valid(b.zeilen, b.spalten) {
 			continue
@@ -240,7 +241,7 @@ func (b brett) möglicheSteinSchlagenZüge(
 	return möglicheZüge
 }
 
-func (b brett) möglicheDameBewegenZüge(perspektive spieler, startPosition position, regeln regeln) züge {
+func (b Brett) möglicheDameBewegenZüge(perspektive spieler, startPosition position, regeln ZugRegeln) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
@@ -252,11 +253,11 @@ func (b brett) möglicheDameBewegenZüge(perspektive spieler, startPosition posi
 	var möglicheZüge züge
 
 bewegenRichtungen:
-	for bewegenRichtung := range regeln.dameBewegenRichtungen {
+	for bewegenRichtung := range regeln.DameBewegenRichtungen {
 		for anzahlSchritte := 1; anzahlSchritte < maxInt(b.zeilen, b.spalten); anzahlSchritte++ {
 			neuePosition := startPosition.add(
-				bewegenRichtung.vertikal.verschiebung(perspektive)*anzahlSchritte,
-				bewegenRichtung.horizontal.verschiebung(perspektive)*anzahlSchritte,
+				bewegenRichtung.Vertikal.verschiebung(perspektive)*anzahlSchritte,
+				bewegenRichtung.Horizontal.verschiebung(perspektive)*anzahlSchritte,
 			)
 			if !neuePosition.valid(b.zeilen, b.spalten) {
 				continue bewegenRichtungen
@@ -284,10 +285,10 @@ bewegenRichtungen:
 	return möglicheZüge
 }
 
-func (b brett) möglicheDameSchlagenZüge(
+func (b Brett) möglicheDameSchlagenZüge(
 	perspektive spieler,
 	startPosition position,
-	regeln regeln,
+	regeln ZugRegeln,
 	weiterschlagen bool,
 ) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
@@ -304,8 +305,8 @@ schlagenRichtungen:
 	for schlagenRichtung := range regeln.dameSchlagenRichtungen(weiterschlagen) {
 		for anzahlSchritte := 1; anzahlSchritte < maxInt(b.zeilen, b.spalten); anzahlSchritte++ {
 			schlagenPosition := startPosition.add(
-				schlagenRichtung.vertikal.verschiebung(perspektive)*anzahlSchritte,
-				schlagenRichtung.horizontal.verschiebung(perspektive)*anzahlSchritte,
+				schlagenRichtung.Vertikal.verschiebung(perspektive)*anzahlSchritte,
+				schlagenRichtung.Horizontal.verschiebung(perspektive)*anzahlSchritte,
 			)
 			if !schlagenPosition.valid(b.zeilen, b.spalten) {
 				continue schlagenRichtungen
@@ -319,8 +320,8 @@ schlagenRichtungen:
 			}
 
 			neuePosition := schlagenPosition.add(
-				schlagenRichtung.vertikal.verschiebung(perspektive),
-				schlagenRichtung.horizontal.verschiebung(perspektive),
+				schlagenRichtung.Vertikal.verschiebung(perspektive),
+				schlagenRichtung.Horizontal.verschiebung(perspektive),
 			)
 			if !neuePosition.valid(b.zeilen, b.spalten) {
 				continue schlagenRichtungen
@@ -361,7 +362,7 @@ schlagenRichtungen:
 	return möglicheZüge
 }
 
-func (b brett) möglicheZüge(perspektive spieler, regeln regeln, gewonnenÜberprüfen bool) züge {
+func (b Brett) möglicheZüge(perspektive spieler, regeln ZugRegeln, gewonnenÜberprüfen bool) züge {
 	if gewonnenÜberprüfen && b.gewonnen(perspektive, regeln) {
 		return nil
 	}
@@ -379,7 +380,7 @@ func (b brett) möglicheZüge(perspektive spieler, regeln regeln, gewonnenÜberp
 		}
 	}
 
-	if regeln.schlagZwang && len(möglicheZüge) != 0 {
+	if regeln.SchlagZwang && len(möglicheZüge) != 0 {
 		return möglicheZüge
 	}
 
@@ -397,7 +398,7 @@ func (b brett) möglicheZüge(perspektive spieler, regeln regeln, gewonnenÜberp
 	return möglicheZüge
 }
 
-func (b brett) möglicheZügeMitStartPosition(startPosition position, regeln regeln) züge {
+func (b Brett) möglicheZügeMitStartPosition(startPosition position, regeln ZugRegeln) züge {
 	if !startPosition.valid(b.zeilen, b.spalten) {
 		return nil
 	}
@@ -416,8 +417,8 @@ func (b brett) möglicheZügeMitStartPosition(startPosition position, regeln reg
 	return möglicheZügeMitStartPosition
 }
 
-func (b brett) MöglicheZüge(perspektive minimax.Spieler, aiRegeln minimax.Regeln) []minimax.Zug {
-	züge := b.möglicheZüge(perspektive.(spieler), aiRegeln.(regeln), true)
+func (b Brett) MöglicheZüge(perspektive minimax.Spieler, aiRegeln minimax.Regeln) []minimax.Zug {
+	züge := b.möglicheZüge(perspektive.(spieler), aiRegeln.(ZugRegeln), true)
 	aiZüge := make([]minimax.Zug, len(züge))
 	for i, zug := range züge {
 		aiZüge[i] = zug

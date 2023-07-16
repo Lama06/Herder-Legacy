@@ -2,6 +2,7 @@ package dame
 
 import (
 	"fmt"
+
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -64,7 +65,7 @@ func newLehrerInfoScreen(
 			Callback: func() {
 				herderLegacy.OpenScreen(newSpielScreen(herderLegacy, func(gewonnen bool) herderlegacy.Screen {
 					return newGameOverScreen(herderLegacy, nächsterScreen, lehrer, gewonnen)
-				}, lehrer))
+				}, lehrer.spielOptionen))
 			},
 		}),
 	}

@@ -3,13 +3,13 @@ package dame
 import "testing"
 
 var zügeTests = map[string]struct {
-	ausgangsSituation brett
+	ausgangsSituation Brett
 	amZug             spieler
-	regeln            regeln
+	regeln            ZugRegeln
 	erwarteteZüge     züge
 }{
 	"internationale Regeln: Stein bewegen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"____l___",
 			"_____L__",
 			"________",
@@ -20,14 +20,14 @@ var zügeTests = map[string]struct {
 			"_s______",
 		),
 		amZug:  spielerSchüler,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
 					von:                    position{zeile: 7, spalte: 1},
 					zu:                     position{zeile: 6, spalte: 2},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"____l___",
 						"_____L__",
 						"________",
@@ -44,7 +44,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 7, spalte: 1},
 					zu:                     position{zeile: 6, spalte: 0},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"____l___",
 						"_____L__",
 						"________",
@@ -60,7 +60,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: mit Stein schlagen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"________",
 			"________",
 			"________",
@@ -71,7 +71,7 @@ var zügeTests = map[string]struct {
 			"________",
 		),
 		amZug:  spielerSchüler,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -79,7 +79,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 3, spalte: 5},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 4, spalte: 4},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -95,7 +95,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 5, spalte: 7},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 4, spalte: 6},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -111,7 +111,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 7, spalte: 5},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 6, spalte: 6},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -127,7 +127,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: mit Stein rückwärts schlagen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"________",
 			"________",
 			"____l___",
@@ -138,7 +138,7 @@ var zügeTests = map[string]struct {
 			"________",
 		),
 		amZug:  spielerLehrer,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -146,7 +146,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 4, spalte: 6},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 3, spalte: 5},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -164,7 +164,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 4, spalte: 2},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 3, spalte: 3},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -180,7 +180,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 2, spalte: 0},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 3, spalte: 1},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"l_______",
@@ -196,7 +196,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: mit Stein schlagen und Stein zur Dame umwandeln": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"________",
 			"___L_l__",
 			"__s_____",
@@ -207,7 +207,7 @@ var zügeTests = map[string]struct {
 			"________",
 		),
 		amZug:  spielerSchüler,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -215,7 +215,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 0, spalte: 4},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 1, spalte: 3},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"____S___",
 						"_____l__",
 						"________",
@@ -231,7 +231,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: Dame bewegen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"s_______",
 			"_______s",
 			"________",
@@ -242,7 +242,7 @@ var zügeTests = map[string]struct {
 			"_s_____S",
 		),
 		amZug:  spielerLehrer,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			// Nach unten rechts
 			zug{
@@ -250,7 +250,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 5, spalte: 5},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"________",
@@ -267,7 +267,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 6, spalte: 6},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"________",
@@ -286,7 +286,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 5, spalte: 3},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"________",
@@ -303,7 +303,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 6, spalte: 2},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"________",
@@ -322,7 +322,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 3, spalte: 5},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"________",
@@ -339,7 +339,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 2, spalte: 6},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"______L_",
@@ -358,7 +358,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 3, spalte: 3},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"________",
@@ -375,7 +375,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 2, spalte: 2},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_______s",
 						"__L_____",
@@ -392,7 +392,7 @@ var zügeTests = map[string]struct {
 					von:                    position{zeile: 4, spalte: 4},
 					zu:                     position{zeile: 1, spalte: 1},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"s_______",
 						"_L_____s",
 						"________",
@@ -408,7 +408,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: mit Dame schlagen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"________",
 			"_____s__",
 			"________",
@@ -419,7 +419,7 @@ var zügeTests = map[string]struct {
 			"________",
 		),
 		amZug:  spielerLehrer,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -427,7 +427,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 0, spalte: 6},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 1, spalte: 5},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"______L_",
 						"________",
 						"________",
@@ -443,7 +443,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: mit Dame mehrmals schlagen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"________",
 			"___s____",
 			"________",
@@ -454,7 +454,7 @@ var zügeTests = map[string]struct {
 			"_L______",
 		),
 		amZug:  spielerLehrer,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -462,7 +462,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 3, spalte: 5},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 4, spalte: 4},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"___s____",
 						"________",
@@ -478,7 +478,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 0, spalte: 2},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 1, spalte: 3},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"__L_____",
 						"________",
 						"________",
@@ -494,7 +494,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: mit Dame mehrmals in einer Richtung schlagen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"L_______",
 			"________",
 			"__s_____",
@@ -505,7 +505,7 @@ var zügeTests = map[string]struct {
 			"________",
 		),
 		amZug:  spielerLehrer,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -513,7 +513,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 3, spalte: 3},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 2, spalte: 2},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -529,7 +529,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 6, spalte: 6},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 5, spalte: 5},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -545,7 +545,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"internationale Regeln: mit Dame mehrmals schlagen mit verschiedenen Möglichkeiten": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"l_______",
 			"________",
 			"______s_",
@@ -556,7 +556,7 @@ var zügeTests = map[string]struct {
 			"_L______",
 		),
 		amZug:  spielerLehrer,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -564,7 +564,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 5, spalte: 3},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 6, spalte: 2},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"l_______",
 						"________",
 						"______s_",
@@ -580,7 +580,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 7, spalte: 5},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 6, spalte: 4},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"l_______",
 						"________",
 						"______s_",
@@ -596,7 +596,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 2, spalte: 0},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 3, spalte: 1},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"l_______",
 						"________",
 						"L_____s_",
@@ -614,7 +614,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 5, spalte: 3},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 6, spalte: 2},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"l_______",
 						"________",
 						"______s_",
@@ -630,7 +630,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 2, spalte: 0},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 3, spalte: 1},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"l_______",
 						"________",
 						"L_____s_",
@@ -646,7 +646,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 7, spalte: 5},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 6, spalte: 4},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"l_______",
 						"________",
 						"______s_",
@@ -662,7 +662,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"altdeutsche Regeln: mit Stein schlagen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"________",
 			"________",
 			"________",
@@ -673,7 +673,7 @@ var zügeTests = map[string]struct {
 			"s_______",
 		),
 		amZug:  spielerSchüler,
-		regeln: altdeutscheRegeln,
+		regeln: AltdeutscheZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
@@ -681,7 +681,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 5, spalte: 0},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 6, spalte: 0},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -697,7 +697,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 5, spalte: 2},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 5, spalte: 1},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -713,7 +713,7 @@ var zügeTests = map[string]struct {
 					zu:                     position{zeile: 3, spalte: 4},
 					hatGeschlagenePosition: true,
 					geschlagenePosition:    position{zeile: 4, spalte: 3},
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"________",
 						"________",
 						"________",
@@ -729,7 +729,7 @@ var zügeTests = map[string]struct {
 	},
 
 	"kein Zug möglich wenn gewonnen": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"________",
 			"________",
 			"________",
@@ -740,25 +740,25 @@ var zügeTests = map[string]struct {
 			"s_s_s_s_",
 		),
 		amZug:         spielerSchüler,
-		regeln:        internationaleRegeln,
+		regeln:        InternationaleZugRegeln,
 		erwarteteZüge: nil,
 	},
 
 	"4x3 Brett": {
-		ausgangsSituation: mustParseBrett(
+		ausgangsSituation: MustParseBrett(
 			"l___",
 			"____",
 			"s___",
 		),
 		amZug:  spielerSchüler,
-		regeln: internationaleRegeln,
+		regeln: InternationaleZugRegeln,
 		erwarteteZüge: züge{
 			zug{
 				zugSchritt{
 					von:                    position{zeile: 2, spalte: 0},
 					zu:                     position{zeile: 1, spalte: 1},
 					hatGeschlagenePosition: false,
-					ergebnis: mustParseBrett(
+					ergebnis: MustParseBrett(
 						"l___",
 						"_s__",
 						"____",

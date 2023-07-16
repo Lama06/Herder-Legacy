@@ -1,14 +1,15 @@
 package dame
 
 import (
+	"math"
+	"math/rand"
+
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/minimax"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
-	"math"
-	"math/rand"
 )
 
 const (
@@ -18,12 +19,18 @@ const (
 	spielScreenBrettMaxHöhe   = ui.Height
 )
 
+type SpielOptionen struct {
+	StartBrett Brett
+	AiTiefe    int
+	ZugRegeln  ZugRegeln
+}
+
 type spielScreen struct {
 	herderLegacy   herderlegacy.HerderLegacy
 	nächsterScreen func(gewonnen bool) herderlegacy.Screen
-	lehrer         lehrer
+	optionen       SpielOptionen
 
-	brett brett
+	brett Brett
 
 	aufgebenKnopf *ui.Button
 
@@ -42,13 +49,13 @@ var _ herderlegacy.Screen = (*spielScreen)(nil)
 func newSpielScreen(
 	herderLegacy herderlegacy.HerderLegacy,
 	nächsterScreen func(gewonnen bool) herderlegacy.Screen,
-	lehrer lehrer,
+	optionen SpielOptionen,
 ) *spielScreen {
 	return &spielScreen{
 		herderLegacy:   herderLegacy,
 		nächsterScreen: nächsterScreen,
-		brett:          lehrer.anfangsBrett.clone(),
-		lehrer:         lehrer,
+		brett:          optionen.StartBrett.clone(),
+		optionen:       optionen,
 		aufgebenKnopf: ui.NewButton(ui.ButtonConfig{
 			Position: ui.Position{
 				X:                10,
@@ -173,16 +180,16 @@ func (s *spielScreen) handleClick(mausX, mausY int) {
 		return
 	}
 
-	möglicheZüge := s.brett.möglicheZügeMitStartPosition(s.ausgewähltePosition, s.lehrer.regeln)
+	möglicheZüge := s.brett.möglicheZügeMitStartPosition(s.ausgewähltePosition, s.optionen.ZugRegeln)
 	s.hatAusgewähltePosition = false
 
 	for _, möglicherZug := range möglicheZüge {
 		if möglicherZug.endPosition() == mausPosition {
 			lehrerAiZug, lehrerZugGefunden := minimax.BesterNächsterZug(
 				möglicherZug.ergebnis(),
-				s.lehrer.regeln,
+				s.optionen.ZugRegeln,
 				spielerLehrer,
-				s.lehrer.aiTiefe,
+				s.optionen.AiTiefe,
 			)
 			if !lehrerZugGefunden {
 				s.brett = möglicherZug.ergebnis()
@@ -204,12 +211,12 @@ func (s *spielScreen) Update() {
 		return
 	}
 
-	if s.brett.gewonnen(spielerSchüler, s.lehrer.regeln) {
+	if s.brett.gewonnen(spielerSchüler, s.optionen.ZugRegeln) {
 		s.herderLegacy.OpenScreen(s.nächsterScreen(true))
 		return
 	}
 
-	if s.brett.gewonnen(spielerLehrer, s.lehrer.regeln) {
+	if s.brett.gewonnen(spielerLehrer, s.optionen.ZugRegeln) {
 		s.herderLegacy.OpenScreen(s.nächsterScreen(false))
 		return
 	}
@@ -249,7 +256,7 @@ func (s *spielScreen) Draw(screen *ebiten.Image) {
 		spielScreenBrettMaxHöhe,
 		s.hatAusgewähltePosition,
 		s.ausgewähltePosition,
-		s.lehrer.regeln,
+		s.optionen.ZugRegeln,
 	)
 	for _, verlorenerStein := range s.geschlageneSteine {
 		verlorenerStein.draw(screen)

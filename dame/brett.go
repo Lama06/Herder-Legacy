@@ -3,44 +3,45 @@ package dame
 import (
 	"errors"
 	"fmt"
+	"image/color"
+	"math"
+	"strings"
+
 	"github.com/Lama06/Herder-Legacy/minimax"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/colornames"
-	"image/color"
-	"math"
-	"strings"
 )
 
-type brett struct {
+type Brett struct {
 	zeilen, spalten int
 	felder          [][]feld
 }
 
-var _ minimax.Brett = brett{}
+var _ minimax.Brett = Brett{}
 
-func newLeeresBrett(zeilen, spalten int) brett {
+func newLeeresBrett(zeilen, spalten int) Brett {
 	felder := make([][]feld, zeilen)
 	for zeile := 0; zeile < zeilen; zeile++ {
 		felder[zeile] = make([]feld, spalten)
 	}
-	return brett{
+	return Brett{
 		zeilen:  zeilen,
 		spalten: spalten,
 		felder:  felder,
 	}
 }
 
-func parseBrett(zeilen ...string) (brett, error) {
+func ParseBrett(zeilen ...string) (Brett, error) {
 	zeilenAnzahl := len(zeilen)
 	if zeilenAnzahl == 0 {
-		return brett{}, errors.New("Brett muss mindestens eine Zeile haben")
+		return Brett{}, errors.New("Brett muss mindestens eine Zeile haben")
 	}
 
 	spaltenAnzahl := len(zeilen[0])
 	for _, zeile := range zeilen {
 		if len(zeile) != spaltenAnzahl {
-			return brett{}, errors.New("alle Zeilen müssen gleich lang sein")
+			return Brett{}, errors.New("alle Zeilen müssen gleich lang sein")
 		}
 	}
 
@@ -49,7 +50,7 @@ func parseBrett(zeilen ...string) (brett, error) {
 		for spalte, feldZeichen := range zeileText {
 			feld, err := parseFeld(feldZeichen)
 			if err != nil {
-				return brett{}, fmt.Errorf("feld konnte nicht erkannt werden: %w", err)
+				return Brett{}, fmt.Errorf("feld konnte nicht erkannt werden: %w", err)
 			}
 			parsedBrett.setFeld(position{zeile: zeile, spalte: spalte}, feld)
 		}
@@ -57,15 +58,15 @@ func parseBrett(zeilen ...string) (brett, error) {
 	return parsedBrett, nil
 }
 
-func mustParseBrett(zeilen ...string) brett {
-	brett, err := parseBrett(zeilen...)
+func MustParseBrett(zeilen ...string) Brett {
+	brett, err := ParseBrett(zeilen...)
 	if err != nil {
 		panic(err)
 	}
 	return brett
 }
 
-func (b brett) clone() brett {
+func (b Brett) clone() Brett {
 	felder := make([][]feld, b.zeilen)
 	for zeile := 0; zeile < b.zeilen; zeile++ {
 		felder[zeile] = make([]feld, b.spalten)
@@ -73,14 +74,14 @@ func (b brett) clone() brett {
 			felder[zeile][spalte] = b.felder[zeile][spalte]
 		}
 	}
-	return brett{
+	return Brett{
 		zeilen:  b.zeilen,
 		spalten: b.spalten,
 		felder:  felder,
 	}
 }
 
-func (brett1 brett) equals(brett2 brett) bool {
+func (brett1 Brett) equals(brett2 Brett) bool {
 	if brett1.zeilen != brett2.zeilen || brett1.spalten != brett2.spalten {
 		return false
 	}
@@ -96,7 +97,7 @@ func (brett1 brett) equals(brett2 brett) bool {
 	return true
 }
 
-func (b brett) String() string {
+func (b Brett) String() string {
 	var result strings.Builder
 	for zeile := 0; zeile < b.zeilen; zeile++ {
 		if zeile != 0 {
@@ -111,7 +112,7 @@ func (b brett) String() string {
 	return result.String()
 }
 
-func (b brett) feld(pos position) feld {
+func (b Brett) feld(pos position) feld {
 	if !pos.valid(b.zeilen, b.spalten) {
 		panic("invalid position")
 	}
@@ -119,11 +120,11 @@ func (b brett) feld(pos position) feld {
 	return b.felder[pos.zeile][pos.spalte]
 }
 
-func (b brett) setFeld(pos position, neuesFeld feld) {
+func (b Brett) setFeld(pos position, neuesFeld feld) {
 	b.felder[pos.zeile][pos.spalte] = neuesFeld
 }
 
-func (b brett) umwandlungsZeile(perspektive spieler) int {
+func (b Brett) umwandlungsZeile(perspektive spieler) int {
 	switch perspektive {
 	case spielerLehrer:
 		return b.zeilen - 1
@@ -134,7 +135,7 @@ func (b brett) umwandlungsZeile(perspektive spieler) int {
 	}
 }
 
-func (b brett) felderZählen(gesucht feld) int {
+func (b Brett) felderZählen(gesucht feld) int {
 	var anzahl int
 	for zeile := 0; zeile < b.zeilen; zeile++ {
 		for spalte := 0; spalte < b.spalten; spalte++ {
@@ -146,11 +147,11 @@ func (b brett) felderZählen(gesucht feld) int {
 	return anzahl
 }
 
-func (b brett) gewonnen(perspektive spieler, regeln regeln) bool {
+func (b Brett) gewonnen(perspektive spieler, regeln ZugRegeln) bool {
 	return len(b.möglicheZüge(perspektive.gegner(), regeln, false)) == 0
 }
 
-func (b brett) bewertung(perspektive spieler, regeln regeln) int {
+func (b Brett) bewertung(perspektive spieler, regeln ZugRegeln) int {
 	const (
 		gewonnenBewertung = 1000
 		steinBewertung    = 1
@@ -171,25 +172,25 @@ func (b brett) bewertung(perspektive spieler, regeln regeln) int {
 	return perspektiveBewertung - gegnerBewertung
 }
 
-func (b brett) Bewertung(perspektive minimax.Spieler, aiRegeln minimax.Regeln) int {
-	return b.bewertung(perspektive.(spieler), aiRegeln.(regeln))
+func (b Brett) Bewertung(perspektive minimax.Spieler, aiRegeln minimax.Regeln) int {
+	return b.bewertung(perspektive.(spieler), aiRegeln.(ZugRegeln))
 }
 
-func (b brett) feldSize(maxBrettBreite, maxBrettHoehe float64) float64 {
+func (b Brett) feldSize(maxBrettBreite, maxBrettHoehe float64) float64 {
 	return minFloat64(maxBrettBreite/float64(b.spalten), maxBrettHoehe/float64(b.zeilen))
 }
 
-func (b brett) brettSize(maxBrettBreite, maxBrettHoehe float64) (brettBreite, brettHoehe float64) {
+func (b Brett) brettSize(maxBrettBreite, maxBrettHoehe float64) (brettBreite, brettHoehe float64) {
 	feldSize := b.feldSize(maxBrettBreite, maxBrettHoehe)
 	return feldSize * float64(b.spalten), feldSize * float64(b.zeilen)
 }
 
-func (b brett) brettAbstand(maxBrettBreite, maxBrettHoehe float64) (brettAbstandX, brettAbstandY float64) {
+func (b Brett) brettAbstand(maxBrettBreite, maxBrettHoehe float64) (brettAbstandX, brettAbstandY float64) {
 	brettBreite, brettHoehe := b.brettSize(maxBrettBreite, maxBrettHoehe)
 	return (maxBrettBreite - brettBreite) / 2, (maxBrettHoehe - brettHoehe) / 2
 }
 
-func (b brett) feldPosition(
+func (b Brett) feldPosition(
 	pos position,
 	brettX, brettY, maxBrettBreite, maxBrettHoehe float64,
 ) (feldX, feldY float64) {
@@ -198,11 +199,11 @@ func (b brett) feldPosition(
 	return brettX + brettAbstandX + feldSize*float64(pos.spalte), brettY + brettAbstandY + feldSize*float64(pos.zeile)
 }
 
-func (b brett) draw(
+func (b Brett) draw(
 	screen *ebiten.Image,
 	brettX, brettY, maxBrettBreite, maxBrettHoehe float64,
 	hatAusgewähltePosition bool, ausgewähltePosition position,
-	regeln regeln,
+	regeln ZugRegeln,
 ) {
 	zugEndPositionen := make(map[position]struct{})
 	if hatAusgewähltePosition {
@@ -244,7 +245,7 @@ func (b brett) draw(
 	}
 }
 
-func (b brett) screenPositionToBrettPosition(
+func (b Brett) screenPositionToBrettPosition(
 	screenX, screenY float64,
 	brettX, brettY, maxBrettBreite, maxBrettHoehe float64,
 ) (pos position, ok bool) {

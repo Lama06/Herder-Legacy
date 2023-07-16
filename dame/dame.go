@@ -11,8 +11,8 @@ func NewFreierModusScreen(
 
 func NewLehrerDameSpielScreen(
 	herderLegacy herderlegacy.HerderLegacy,
+	optionen SpielOptionen,
 	nächsterScreen func(gewonnen bool) herderlegacy.Screen,
-	lehrer lehrer,
 ) herderlegacy.Screen {
-	return newSpielScreen(herderLegacy, nächsterScreen, lehrer)
+	return newSpielScreen(herderLegacy, nächsterScreen, optionen)
 }

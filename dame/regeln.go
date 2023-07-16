@@ -1,52 +1,52 @@
 package dame
 
-type regeln struct {
-	steinBewegenRichtungen                map[richtung]struct{}
-	steinSchlagenRichtungenAnfang         map[richtung]struct{}
-	steinSchlagenRichtungenWeiterschlagen map[richtung]struct{}
+type ZugRegeln struct {
+	SteinBewegenRichtungen                map[Richtung]struct{}
+	SteinSchlagenRichtungenAnfang         map[Richtung]struct{}
+	SteinSchlagenRichtungenWeiterschlagen map[Richtung]struct{}
 
-	dameBewegenRichtungen                map[richtung]struct{}
-	dameSchlagenRichtungenAnfang         map[richtung]struct{}
-	dameSchlagenRichtungenWeiterschlagen map[richtung]struct{}
+	DameBewegenRichtungen                map[Richtung]struct{}
+	DameSchlagenRichtungenAnfang         map[Richtung]struct{}
+	DameSchlagenRichtungenWeiterschlagen map[Richtung]struct{}
 
-	schlagZwang bool
+	SchlagZwang bool
 }
 
-func (r regeln) steinSchlagenRichtungen(weitschlagen bool) map[richtung]struct{} {
+func (z ZugRegeln) steinSchlagenRichtungen(weitschlagen bool) map[Richtung]struct{} {
 	if weitschlagen {
-		return r.steinSchlagenRichtungenWeiterschlagen
+		return z.SteinSchlagenRichtungenWeiterschlagen
 	}
-	return r.steinSchlagenRichtungenAnfang
+	return z.SteinSchlagenRichtungenAnfang
 }
 
-func (r regeln) dameSchlagenRichtungen(weiterschlagen bool) map[richtung]struct{} {
+func (z ZugRegeln) dameSchlagenRichtungen(weiterschlagen bool) map[Richtung]struct{} {
 	if weiterschlagen {
-		return r.dameSchlagenRichtungenWeiterschlagen
+		return z.DameSchlagenRichtungenWeiterschlagen
 	}
-	return r.dameSchlagenRichtungenAnfang
+	return z.DameSchlagenRichtungenAnfang
 }
 
 var (
-	internationaleRegeln = regeln{
-		steinBewegenRichtungen:                richtungenDiagonalVorne,
-		steinSchlagenRichtungenAnfang:         richtungenDiagonalVorne,
-		steinSchlagenRichtungenWeiterschlagen: richtungenDiagonal,
+	InternationaleZugRegeln = ZugRegeln{
+		SteinBewegenRichtungen:                RichtungenDiagonalVorne,
+		SteinSchlagenRichtungenAnfang:         RichtungenDiagonalVorne,
+		SteinSchlagenRichtungenWeiterschlagen: RichtungenDiagonal,
 
-		dameBewegenRichtungen:                richtungenDiagonal,
-		dameSchlagenRichtungenAnfang:         richtungenDiagonal,
-		dameSchlagenRichtungenWeiterschlagen: richtungenDiagonal,
+		DameBewegenRichtungen:                RichtungenDiagonal,
+		DameSchlagenRichtungenAnfang:         RichtungenDiagonal,
+		DameSchlagenRichtungenWeiterschlagen: RichtungenDiagonal,
 
-		schlagZwang: true,
+		SchlagZwang: true,
 	}
-	altdeutscheRegeln = regeln{
-		steinBewegenRichtungen:                richtungenDiagonalVorne,
-		steinSchlagenRichtungenAnfang:         richtungenSeiteDiagonalUndVorne,
-		steinSchlagenRichtungenWeiterschlagen: richtungenSeiteDiagonalUndVorne,
+	AltdeutscheZugRegeln = ZugRegeln{
+		SteinBewegenRichtungen:                RichtungenDiagonalVorne,
+		SteinSchlagenRichtungenAnfang:         RichtungenSeiteDiagonalUndVorne,
+		SteinSchlagenRichtungenWeiterschlagen: RichtungenSeiteDiagonalUndVorne,
 
-		dameBewegenRichtungen:                richtungenAlle,
-		dameSchlagenRichtungenAnfang:         richtungenAlle,
-		dameSchlagenRichtungenWeiterschlagen: richtungenAlle,
+		DameBewegenRichtungen:                RichtungenAlle,
+		DameSchlagenRichtungenAnfang:         RichtungenAlle,
+		DameSchlagenRichtungenWeiterschlagen: RichtungenAlle,
 
-		schlagZwang: true,
+		SchlagZwang: true,
 	}
 )

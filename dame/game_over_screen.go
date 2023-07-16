@@ -1,11 +1,12 @@
 package dame
 
 import (
+	"strings"
+
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"strings"
 )
 
 type gameOverScreen struct {
