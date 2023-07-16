@@ -148,7 +148,7 @@ func (b *Button) SetDisabled(disabled bool) {
 func (b *Button) Update() {
 	buttonWidth, buttonHeight := b.buttonSize()
 
-	if b.position.isClicked(float64(buttonWidth), float64(buttonHeight)) && b.callback != nil {
+	if b.position.isClicked(float64(buttonWidth), float64(buttonHeight)) && b.callback != nil && !b.disabled {
 		b.callback()
 	}
 

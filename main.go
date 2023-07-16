@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "embed"
 	"github.com/Lama06/Herder-Legacy/dame"
+	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -51,7 +51,31 @@ func main() {
 	ebiten.SetWindowTitle("Herder Legacy")
 	ebiten.SetFullscreen(true)
 	herderLegacy := herderLegacy{}
-	herderLegacy.currentScreen = dame.NewFreierModusScreen(&herderLegacy, nil)
+	herderLegacy.currentScreen = dialog.NewDialogScreen(
+		&herderLegacy,
+		"Herr Weber",
+		"Hallo",
+		dialog.NewAntwort("Hallo", func() herderlegacy.Screen {
+			return dame.NewLehrerDameSpielScreen(
+				&herderLegacy,
+				func(gewonnen bool) herderlegacy.Screen {
+					if gewonnen {
+						return dialog.NewDialogScreen(
+							&herderLegacy,
+							"Herr Weber",
+							"Gut gemacht",
+						)
+					}
+					return dialog.NewDialogScreen(
+						&herderLegacy,
+						"Herr Weber",
+						"Verdammt",
+					)
+				},
+				dame.HerrWeber,
+			)
+		}),
+	)
 	err := ebiten.RunGame(&herderLegacy)
 	if err != nil {
 		panic(err)
