@@ -37,6 +37,7 @@ func NewDialogScreen(
 ) herderlegacy.Screen {
 	antwortKnoepfe := make([]*ui.Button, len(antworten))
 	for i, antwort := range antworten {
+		antwort := antwort
 		antwortKnoepfe[i] = ui.NewButton(ui.ButtonConfig{
 			Position: ui.Position{
 				X:                ui.Width / 2,

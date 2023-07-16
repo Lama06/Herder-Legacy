@@ -12,7 +12,6 @@ import (
 type lehrerInfoScreen struct {
 	herderLegacy   herderlegacy.HerderLegacy
 	nächsterScreen func() herderlegacy.Screen
-	lehrer         lehrer
 	title          *ui.Title
 	info           *ui.Text
 	zurückKnopf    *ui.Button

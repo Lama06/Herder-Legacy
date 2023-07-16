@@ -16,30 +16,113 @@ const (
 	buttonScaleMaxChangePerTick = 0.03
 )
 
-var (
-	buttonBackgroundColor        = color.RGBA{R: 18, G: 53, B: 91, A: 255}
-	hoveredButtonBackgroundColor = color.RGBA{R: 134, G: 22, B: 87, A: 255}
-	buttonTextColor              = color.RGBA{R: 212, G: 245, B: 245, A: 255}
-	hoveredButtonTextColor       = color.RGBA{R: 212, G: 245, B: 245, A: 255}
+type ButtonColorPalette struct {
+	BackgroundColor        color.Color
+	BackgroundColorHovered color.Color
+	TextColor              color.Color
+	TextColorHovered       color.Color
 
-	disabledButtonBackgroundColor        = color.RGBA{R: 42, G: 59, B: 82, A: 255}
-	disabledHoveredButtonBackgroundColor = color.RGBA{R: 29, G: 37, B: 48, A: 255}
-	disabledButtonTextColor              = color.RGBA{R: 212, G: 245, B: 245, A: 255}
-	disabledHoveredButtonTextColor       = color.RGBA{R: 212, G: 245, B: 245, A: 255}
-)
+	BackgroundColorDisabled        color.Color
+	BackgroundColorHoveredDisabled color.Color
+	TextColorDisabled              color.Color
+	TextColorHoveredDisabled       color.Color
+}
+
+func (b ButtonColorPalette) backgroundColorHoveredOrDefault() color.Color {
+	if b.BackgroundColorHovered == nil {
+		return b.BackgroundColor
+	}
+	return b.BackgroundColorHovered
+}
+
+func (b ButtonColorPalette) textColorHoveredOrDefault() color.Color {
+	if b.TextColorHovered == nil {
+		return b.TextColor
+	}
+	return b.TextColorHovered
+}
+
+func (b ButtonColorPalette) backgroundColorDisabledOrDefault() color.Color {
+	if b.BackgroundColorDisabled == nil {
+		return b.BackgroundColor
+	}
+	return b.BackgroundColorDisabled
+}
+
+func (b ButtonColorPalette) backgroundColorHoveredDisabledOrDefault() color.Color {
+	if b.BackgroundColorHoveredDisabled == nil {
+		return b.backgroundColorDisabledOrDefault()
+	}
+	return b.BackgroundColorHoveredDisabled
+}
+
+func (b ButtonColorPalette) textColorDisabledOrDefault() color.Color {
+	if b.TextColorDisabled == nil {
+		return b.TextColor
+	}
+	return b.TextColorDisabled
+}
+
+func (b ButtonColorPalette) textColorHoveredDisabledOrDefault() color.Color {
+	if b.TextColorHoveredDisabled == nil {
+		return b.textColorDisabledOrDefault()
+	}
+	return b.TextColorHoveredDisabled
+}
+
+func (b ButtonColorPalette) backgroundColor(hovered, disabled bool) color.Color {
+	if hovered {
+		if disabled {
+			return b.backgroundColorHoveredDisabledOrDefault()
+		}
+		return b.backgroundColorHoveredOrDefault()
+	}
+	if disabled {
+		return b.backgroundColorDisabledOrDefault()
+	}
+	return b.BackgroundColor
+}
+
+func (b ButtonColorPalette) textColor(hovered, disabled bool) color.Color {
+	if hovered {
+		if disabled {
+			return b.textColorHoveredDisabledOrDefault()
+		}
+		return b.textColorHoveredOrDefault()
+	}
+	if disabled {
+		return b.textColorDisabledOrDefault()
+	}
+	return b.TextColor
+}
+
+var defaultButtonColorPalette = ButtonColorPalette{
+	BackgroundColor:        color.RGBA{R: 18, G: 53, B: 91, A: 255},
+	BackgroundColorHovered: color.RGBA{R: 134, G: 22, B: 87, A: 255},
+	TextColor:              color.RGBA{R: 212, G: 245, B: 245, A: 255},
+	TextColorHovered:       color.RGBA{R: 212, G: 245, B: 245, A: 255},
+
+	BackgroundColorDisabled:        color.RGBA{R: 42, G: 59, B: 82, A: 255},
+	BackgroundColorHoveredDisabled: color.RGBA{R: 29, G: 37, B: 48, A: 255},
+	TextColorDisabled:              color.RGBA{R: 212, G: 245, B: 245, A: 255},
+	TextColorHoveredDisabled:       color.RGBA{R: 212, G: 245, B: 245, A: 255},
+}
 
 type ButtonConfig struct {
-	Position Position
-	Text     string
-	Callback func()
-	Disabled bool
+	Position           Position
+	Text               string
+	CustomColorPalette bool
+	ColorPalette       ButtonColorPalette
+	Callback           func()
+	Disabled           bool
 }
 
 type Button struct {
-	position Position
-	text     string
-	callback func()
-	disabled bool
+	position     Position
+	text         string
+	colorPalette ButtonColorPalette
+	callback     func()
+	disabled     bool
 
 	currentScale  float64
 	hovered       bool
@@ -50,11 +133,19 @@ type Button struct {
 var _ Component = (*Button)(nil)
 
 func NewButton(config ButtonConfig) *Button {
+	var colorPalette ButtonColorPalette
+	if config.CustomColorPalette {
+		colorPalette = config.ColorPalette
+	} else {
+		colorPalette = defaultButtonColorPalette
+	}
+
 	button := Button{
-		position: config.Position,
-		text:     config.Text,
-		callback: config.Callback,
-		disabled: config.Disabled,
+		position:     config.Position,
+		text:         config.Text,
+		colorPalette: colorPalette,
+		callback:     config.Callback,
+		disabled:     config.Disabled,
 
 		currentScale: buttonScaleNotHovered,
 	}
@@ -86,37 +177,15 @@ func (b *Button) createImage(backgroundColor, textColor color.Color) *ebiten.Ima
 	return img
 }
 
-func (b *Button) backgroundColor() color.Color {
-	if b.disabled {
-		return disabledButtonBackgroundColor
-	}
-	return buttonBackgroundColor
-}
-
-func (b *Button) backgroundColorHovered() color.Color {
-	if b.disabled {
-		return disabledHoveredButtonBackgroundColor
-	}
-	return hoveredButtonBackgroundColor
-}
-
-func (b *Button) textColor() color.Color {
-	if b.disabled {
-		return disabledButtonTextColor
-	}
-	return buttonTextColor
-}
-
-func (b *Button) textColorHovered() color.Color {
-	if b.disabled {
-		return disabledHoveredButtonTextColor
-	}
-	return hoveredButtonTextColor
-}
-
 func (b *Button) updateImages() {
-	b.imgNotHovered = b.createImage(b.backgroundColor(), b.textColor())
-	b.imgHovered = b.createImage(b.backgroundColorHovered(), b.textColorHovered())
+	b.imgNotHovered = b.createImage(
+		b.colorPalette.backgroundColor(false, b.disabled),
+		b.colorPalette.textColor(false, b.disabled),
+	)
+	b.imgHovered = b.createImage(
+		b.colorPalette.backgroundColor(true, b.disabled),
+		b.colorPalette.textColor(true, b.disabled),
+	)
 }
 
 func (b *Button) Position() Position {
@@ -133,6 +202,15 @@ func (b *Button) Text() string {
 
 func (b *Button) SetText(text string) {
 	b.text = text
+	b.updateImages()
+}
+
+func (b *Button) ColorPalette() ButtonColorPalette {
+	return b.colorPalette
+}
+
+func (b *Button) SetColorPalette(colorPalette ButtonColorPalette) {
+	b.colorPalette = colorPalette
 	b.updateImages()
 }
 

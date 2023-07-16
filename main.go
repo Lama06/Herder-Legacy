@@ -1,13 +1,15 @@
 package main
 
 import (
+	"runtime"
+
 	"github.com/Lama06/Herder-Legacy/dame"
 	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/stabwelle"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"runtime"
 )
 
 type herderLegacy struct {
@@ -54,15 +56,13 @@ func main() {
 	herderLegacy.currentScreen = dialog.NewDialogScreen(
 		&herderLegacy,
 		"Herr Weber",
-		"Hallo",
+		"HalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHallo",
 		dialog.NewAntwort("Tschau", func() herderlegacy.Screen {
-			return dame.NewFreierModusScreen(&herderLegacy, func() herderlegacy.Screen {
-				return dialog.NewDialogScreen(
-					&herderLegacy,
-					"Herr Weber",
-					"Gut gemacht",
-				)
-			})
+			return stabwelle.NewStabwelleScreen(
+				&herderLegacy,
+				nil,
+				3,
+			)
 		}),
 		dialog.NewAntwort("Hallo", func() herderlegacy.Screen {
 			return dame.NewLehrerDameSpielScreen(
