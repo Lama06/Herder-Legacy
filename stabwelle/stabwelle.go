@@ -46,8 +46,8 @@ var (
 )
 
 type stabwelleScreen struct {
-	herderLegacy    herderlegacy.HerderLegacy
-	naechsterScreen func(erfolg bool) herderlegacy.Screen
+	herderLegacy   herderlegacy.HerderLegacy
+	nächsterScreen func(erfolg bool) herderlegacy.Screen
 
 	verbleibendeVersuche     int
 	verbleibendeVersucheText *ui.Text
@@ -62,7 +62,7 @@ var _ herderlegacy.Screen = (*stabwelleScreen)(nil)
 
 func NewStabwelleScreen(
 	herderLegacy herderlegacy.HerderLegacy,
-	naechsterScreen func(erfolg bool) herderlegacy.Screen,
+	nächsterScreen func(erfolg bool) herderlegacy.Screen,
 	versuche int,
 ) herderlegacy.Screen {
 	stäbe := make([]*stab, stäbeAnzahl)
@@ -75,8 +75,8 @@ func NewStabwelleScreen(
 	}
 
 	return &stabwelleScreen{
-		herderLegacy:    herderLegacy,
-		naechsterScreen: naechsterScreen,
+		herderLegacy:   herderLegacy,
+		nächsterScreen: nächsterScreen,
 
 		verbleibendeVersuche: versuche,
 		verbleibendeVersucheText: ui.NewText(ui.TextConfig{
@@ -102,7 +102,7 @@ func NewStabwelleScreen(
 			CustomColorPalette: true,
 			ColorPalette:       aufgebenKnopfFarbe,
 			Callback: func() {
-				herderLegacy.OpenScreen(naechsterScreen(false))
+				herderLegacy.OpenScreen(nächsterScreen(false))
 			},
 		}),
 
@@ -118,22 +118,25 @@ func (s *stabwelleScreen) Update() {
 	var aktuellenStabErhöht bool
 	for i, stab := range s.stäbe {
 		verloren, fertig := stab.update(i == s.aktuellerStab)
-		if verloren && !aktuellenStabErhöht {
+		if verloren {
 			if s.verbleibendeVersuche-1 >= 1 {
-				s.herderLegacy.OpenScreen(NewStabwelleScreen(s.herderLegacy, s.naechsterScreen, s.verbleibendeVersuche-1))
+				s.herderLegacy.OpenScreen(NewStabwelleScreen(s.herderLegacy, s.nächsterScreen, s.verbleibendeVersuche-1))
 				return
 			}
-			s.herderLegacy.OpenScreen(s.naechsterScreen(false))
+			s.herderLegacy.OpenScreen(s.nächsterScreen(false))
 			return
 		}
-		if fertig && !aktuellenStabErhöht {
+		if fertig {
 			if s.aktuellerStab == stäbeAnzahl-1 {
-				s.herderLegacy.OpenScreen(s.naechsterScreen(true))
+				s.herderLegacy.OpenScreen(s.nächsterScreen(true))
 				return
 			}
 			aktuellenStabErhöht = true
-			s.aktuellerStab++
 		}
+	}
+
+	if aktuellenStabErhöht {
+		s.aktuellerStab++
 	}
 }
 
@@ -163,6 +166,7 @@ type stab struct {
 	x         float64
 	yOffset   float64
 	yRichtung int
+	fertig    bool
 }
 
 func (s *stab) obererTeilYPosition() float64 {
@@ -189,7 +193,11 @@ func (s *stab) kollidiertMitMittellinie() bool {
 	return s.kollidiertTeilMitMittelLinie(s.obererTeilYPosition()) || s.kollidiertTeilMitMittelLinie(s.untererTeilYPosition())
 }
 
-func (s *stab) update(aktiv bool) (verloren bool, fertig bool) {
+func (s *stab) bewegen() {
+	if s.fertig {
+		return
+	}
+
 	s.yOffset += float64(s.yRichtung) * stabYSpeed
 	if s.yOffset <= -stabMaxYOffset {
 		s.yOffset = -stabMaxYOffset
@@ -199,6 +207,10 @@ func (s *stab) update(aktiv bool) (verloren bool, fertig bool) {
 		s.yOffset = stabMaxYOffset
 		s.yRichtung = -1
 	}
+}
+
+func (s *stab) update(aktiv bool) (verloren bool, fertig bool) {
+	s.bewegen()
 
 	if aktiv && (inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) ||
 		len(inpututil.AppendJustPressedTouchIDs(nil)) != 0 ||
@@ -206,6 +218,7 @@ func (s *stab) update(aktiv bool) (verloren bool, fertig bool) {
 		if s.kollidiertMitMittellinie() {
 			return true, false
 		}
+		s.fertig = true
 		return false, true
 	}
 

@@ -214,6 +214,14 @@ func (b *Button) SetColorPalette(colorPalette ButtonColorPalette) {
 	b.updateImages()
 }
 
+func (b *Button) Callback() func() {
+	return b.callback
+}
+
+func (b *Button) SetCallback(callback func()) {
+	b.callback = callback
+}
+
 func (b *Button) Disabled() bool {
 	return b.disabled
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/dame"
 	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/passwortdreher"
 	"github.com/Lama06/Herder-Legacy/stabwelle"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -53,60 +54,75 @@ func main() {
 	ebiten.SetWindowTitle("Herder Legacy")
 	ebiten.SetFullscreen(true)
 	herderLegacy := herderLegacy{}
-	herderLegacy.currentScreen = dialog.NewDialogScreen(
-		&herderLegacy,
-		"Herr Weber",
-		"HalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHallo",
-		dialog.NewAntwort("Tschau", func() herderlegacy.Screen {
-			return stabwelle.NewStabwelleScreen(
-				&herderLegacy,
-				nil,
-				3,
-			)
-		}),
-		dialog.NewAntwort("Hallo", func() herderlegacy.Screen {
-			return dame.NewLehrerDameSpielScreen(
-				&herderLegacy,
-				dame.SpielOptionen{
-					StartBrett: dame.MustParseBrett(
-						"_l_l_l_l",
-						"l_l_l_l_",
-						"_l_l_l_l",
-						"________",
-						"________",
-						"s_s_s_s_",
-						"_s_s_s_s",
-						"s_s_s_s_",
-					),
-					ZugRegeln: dame.InternationaleZugRegeln,
-					AiTiefe:   5,
-				},
-				func(gewonnen bool) herderlegacy.Screen {
-					if gewonnen {
+	var newMenuScreen func() herderlegacy.Screen
+	newMenuScreen = func() herderlegacy.Screen {
+		return dialog.NewDialogScreen(
+			&herderLegacy,
+			"Herr Weber",
+			"HalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHallloHalloHalloHalloHallo",
+			dialog.NewAntwort("Tschau2", func() herderlegacy.Screen {
+				return passwortdreher.NewPasswortDreherScreen(
+					&herderLegacy,
+					func(erfolg bool) herderlegacy.Screen {
+						return newMenuScreen()
+					},
+					3,
+				)
+			}),
+			dialog.NewAntwort("Tschau", func() herderlegacy.Screen {
+				return stabwelle.NewStabwelleScreen(
+					&herderLegacy,
+					func(erfolg bool) herderlegacy.Screen {
+						return newMenuScreen()
+					},
+					3,
+				)
+			}),
+			dialog.NewAntwort("Hallo", func() herderlegacy.Screen {
+				return dame.NewLehrerDameSpielScreen(
+					&herderLegacy,
+					dame.SpielOptionen{
+						StartBrett: dame.MustParseBrett(
+							"_l_l_l_l",
+							"l_l_l_l_",
+							"_l_l_l_l",
+							"________",
+							"________",
+							"s_s_s_s_",
+							"_s_s_s_s",
+							"s_s_s_s_",
+						),
+						ZugRegeln: dame.InternationaleZugRegeln,
+						AiTiefe:   5,
+					},
+					func(gewonnen bool) herderlegacy.Screen {
+						if gewonnen {
+							return dialog.NewDialogScreen(
+								&herderLegacy,
+								"Herr Weber",
+								"Gut gemacht",
+							)
+						}
 						return dialog.NewDialogScreen(
 							&herderLegacy,
 							"Herr Weber",
-							"Gut gemacht",
+							"Verdammt",
+							dialog.NewAntwort("Tschau", func() herderlegacy.Screen {
+								return dame.NewFreierModusScreen(&herderLegacy, func() herderlegacy.Screen {
+									return dialog.NewDialogScreen(
+										&herderLegacy,
+										"Herr Weber",
+										"Gut gemacht",
+									)
+								})
+							}),
 						)
-					}
-					return dialog.NewDialogScreen(
-						&herderLegacy,
-						"Herr Weber",
-						"Verdammt",
-						dialog.NewAntwort("Tschau", func() herderlegacy.Screen {
-							return dame.NewFreierModusScreen(&herderLegacy, func() herderlegacy.Screen {
-								return dialog.NewDialogScreen(
-									&herderLegacy,
-									"Herr Weber",
-									"Gut gemacht",
-								)
-							})
-						}),
-					)
-				},
-			)
-		}),
-	)
+					},
+				)
+			}),
+		)
+	}
+	herderLegacy.OpenScreen(newMenuScreen())
 	err := ebiten.RunGame(&herderLegacy)
 	if err != nil {
 		panic(err)
