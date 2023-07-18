@@ -36,4 +36,22 @@ var breakoutLevelListe = []breakoutLevel{
 			return NewStandardLevel(StandardLevelExpertConfig)
 		},
 	},
+	{
+		name: "Pong - Einfach",
+		worldCreator: func() *world {
+			return NewPongLevel(PongLevelEinfachConfig)
+		},
+	},
+	{
+		name: "Pong - Is ja Normal ne",
+		worldCreator: func() *world {
+			return NewPongLevel(PongLevelNormalConfig)
+		},
+	},
+	{
+		name: "Pong - Ist das möglich?",
+		worldCreator: func() *world {
+			return NewPongLevel(PongLevelHartConfig)
+		},
+	},
 }

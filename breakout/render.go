@@ -16,6 +16,7 @@ const (
 	renderLayerPlattform
 	renderLayerKanonenKugel
 	renderLayerBall
+	renderLayerStörkugel
 )
 
 type renderComponent struct {

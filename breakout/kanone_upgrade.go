@@ -36,84 +36,53 @@ func (f kanonenUpgrade) farbe() color.Color {
 	return colornames.Royalblue
 }
 
-func (f kanonenUpgrade) collect(world *world, plattform *entity) {
-	plattform.hatKanonenKugelSpawnerComponent = true
-	plattform.kanonenKugelSpawnerComponent = kanonenKugelSpawnerComponent{
-		kanonenKugelSpeedX:        float64(plattform.plattformComponent.schießrichtungX) * f.kanonenKugelSpeed,
-		kanonenKugelSpeedY:        float64(plattform.plattformComponent.schießrichtungY) * f.kanonenKugelSpeed,
-		verbleibendeKanonenKugeln: f.anzahlKanonenKugeln,
-		kanoneKugelSchießDelay:    f.kanonenKugelDelay,
-		nächsteKanonenKugel:       f.kanonenKugelDelay,
-		kanonenKugelStärke:        f.kanonenKugelStärke,
-	}
-}
+func (f kanonenUpgrade) collect(w *world, plattform *entity) {
+	const kanonenKugelRadius = 20
 
-type kanonenKugelSpawnerComponent struct {
-	kanonenKugelSpeedX, kanonenKugelSpeedY float64
-	verbleibendeKanonenKugeln              int
-	kanoneKugelSchießDelay                 int
-	nächsteKanonenKugel                    int
-	kanonenKugelStärke                     int
+	plattform.hatSpawnerComponent = true
+	plattform.spawnerComponent = spawnerComponent{
+		verbleibendeSpawns: f.anzahlKanonenKugeln,
+		spawnDelay:         f.kanonenKugelDelay,
+		nächsterSpawn:      f.kanonenKugelDelay,
+		creator: func(w *world, spawner *entity) *entity {
+			spawnerHitbox := spawner.hitbox()
+
+			return &entity{
+				position: position{
+					x: spawnerHitbox.CenterX() - kanonenKugelRadius,
+					y: spawnerHitbox.CenterY() - kanonenKugelRadius,
+				},
+				hatVelocityComponent: true,
+				velocityComponent: velocityComponent{
+					velocityX: float64(plattform.plattformComponent.schießrichtungX) * f.kanonenKugelSpeed,
+					velocityY: float64(plattform.plattformComponent.schießrichtungY) * f.kanonenKugelSpeed,
+				},
+				hatRenderComponent: true,
+				renderComponent: renderComponent{
+					layer: renderLayerKanonenKugel,
+				},
+				hatCircleComponent: true,
+				circleComponent: circleComponent{
+					radius: kanonenKugelRadius,
+					farbe:  colornames.Red,
+				},
+				hatKanonenKugelComponent: true,
+				kanonenKugelComponent: kanonenKugelComponent{
+					stärke: f.kanonenKugelStärke,
+				},
+				hatHitboxComponent: true,
+				hitboxComponent: hitboxComponent{
+					width:  kanonenKugelRadius * 2,
+					height: kanonenKugelRadius * 2,
+				},
+				imAusEntfernen: true,
+			}
+		},
+	}
 }
 
 type kanonenKugelComponent struct {
 	stärke int
-}
-
-func (w *world) kanonenKugelnSpawnen() {
-	const kanonenKugelRadius = 20
-
-	for kanonenKugelSpawner := range w.entities {
-		if !kanonenKugelSpawner.hatKanonenKugelSpawnerComponent {
-			continue
-		}
-
-		kanonenKugelSpawnerHitbox := kanonenKugelSpawner.hitbox()
-
-		if kanonenKugelSpawner.kanonenKugelSpawnerComponent.verbleibendeKanonenKugeln == 0 {
-			kanonenKugelSpawner.hatKanonenKugelSpawnerComponent = false
-			continue
-		}
-
-		if kanonenKugelSpawner.kanonenKugelSpawnerComponent.nächsteKanonenKugel > 0 {
-			kanonenKugelSpawner.kanonenKugelSpawnerComponent.nächsteKanonenKugel--
-			continue
-		}
-
-		kanonenKugelSpawner.kanonenKugelSpawnerComponent.verbleibendeKanonenKugeln--
-		kanonenKugelSpawner.kanonenKugelSpawnerComponent.nächsteKanonenKugel = kanonenKugelSpawner.kanonenKugelSpawnerComponent.kanoneKugelSchießDelay
-
-		w.entities[&entity{
-			position: position{
-				x: kanonenKugelSpawnerHitbox.CenterX() - kanonenKugelRadius,
-				y: kanonenKugelSpawnerHitbox.CenterY() - kanonenKugelRadius,
-			},
-			hatVelocityComponent: true,
-			velocityComponent: velocityComponent{
-				velocityX: kanonenKugelSpawner.kanonenKugelSpawnerComponent.kanonenKugelSpeedX,
-				velocityY: kanonenKugelSpawner.kanonenKugelSpawnerComponent.kanonenKugelSpeedY,
-			},
-			hatRenderComponent: true,
-			renderComponent: renderComponent{
-				layer: renderLayerKanonenKugel,
-			},
-			hatCircleComponent: true,
-			circleComponent: circleComponent{
-				radius: kanonenKugelRadius,
-				farbe:  colornames.Red,
-			},
-			hatKanonenKugelComponent: true,
-			kanonenKugelComponent: kanonenKugelComponent{
-				stärke: kanonenKugelSpawner.kanonenKugelSpawnerComponent.kanonenKugelStärke,
-			},
-			hatHitboxComponent: true,
-			hitboxComponent: hitboxComponent{
-				width:  kanonenKugelRadius * 2,
-				height: kanonenKugelRadius * 2,
-			},
-			imAusEntfernen: true,
-		}] = struct{}{}
-	}
 }
 
 func (w *world) mitKanonenKugelnSteinZerstören() {

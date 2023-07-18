@@ -55,19 +55,20 @@ func main() {
 	ebiten.SetWindowTitle("Herder Legacy")
 	ebiten.SetFullscreen(true)
 	herderLegacy := herderLegacy{}
+
 	var newMenuScreen func() herderlegacy.Screen
 	newMenuScreen = func() herderlegacy.Screen {
 		return dialog.NewDialogScreen(
 			&herderLegacy,
 			"Herr Weber",
-			"HalloHalloHallolloHao",
-			dialog.NewAntwort("Tschau3", func() herderlegacy.Screen {
+			"Was willst du spielen",
+			dialog.NewAntwort("Breakout", func() herderlegacy.Screen {
 				return breakout.NewFreierModusScreen(
 					&herderLegacy,
 					newMenuScreen,
 				)
 			}),
-			dialog.NewAntwort("Tschau2", func() herderlegacy.Screen {
+			dialog.NewAntwort("Passwort knacken", func() herderlegacy.Screen {
 				return passwortdreher.NewPasswortDreherScreen(
 					&herderLegacy,
 					func(erfolg bool) herderlegacy.Screen {
@@ -76,7 +77,7 @@ func main() {
 					3,
 				)
 			}),
-			dialog.NewAntwort("Tschau", func() herderlegacy.Screen {
+			dialog.NewAntwort("Stabwellen (dummer Name ich weiß)", func() herderlegacy.Screen {
 				return stabwelle.NewStabwelleScreen(
 					&herderLegacy,
 					func(erfolg bool) herderlegacy.Screen {
@@ -85,7 +86,7 @@ func main() {
 					3,
 				)
 			}),
-			dialog.NewAntwort("Hallo", func() herderlegacy.Screen {
+			dialog.NewAntwort("Dame", func() herderlegacy.Screen {
 				return dame.NewFreierModusScreen(
 					&herderLegacy,
 					newMenuScreen,
@@ -93,7 +94,14 @@ func main() {
 			}),
 		)
 	}
-	herderLegacy.OpenScreen(newMenuScreen())
+
+	herderLegacy.OpenScreen(dialog.NewDialogScreen(
+		&herderLegacy,
+		"Herr Weber",
+		`Willkommen zu Herrder Games, dem neuem Projekt von WuW`,
+		dialog.NewAntwort("Weiter", newMenuScreen),
+	))
+
 	err := ebiten.RunGame(&herderLegacy)
 	if err != nil {
 		panic(err)

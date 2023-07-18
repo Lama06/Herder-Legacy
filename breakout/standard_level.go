@@ -13,6 +13,7 @@ type StandardLevelConfig struct {
 	PlattformBreite              float64
 	PlattformMaxSpeed            float64
 	BallMaxSpeedX, BallMaxSpeedY float64
+	Störkugel                    bool
 }
 
 var (
@@ -24,6 +25,7 @@ var (
 		PlattformMaxSpeed:         5,
 		BallMaxSpeedX:             4,
 		BallMaxSpeedY:             4,
+		Störkugel:                 false,
 	}
 	StandardLevelEinfachConfig = StandardLevelConfig{
 		SteinSpalten:              10,
@@ -33,6 +35,7 @@ var (
 		PlattformMaxSpeed:         6,
 		BallMaxSpeedX:             6,
 		BallMaxSpeedY:             4,
+		Störkugel:                 false,
 	}
 	StandardLevelMediumConfig = StandardLevelConfig{
 		SteinSpalten:              13,
@@ -42,6 +45,7 @@ var (
 		PlattformMaxSpeed:         8,
 		BallMaxSpeedX:             8,
 		BallMaxSpeedY:             5,
+		Störkugel:                 false,
 	}
 	StandardLevelHardConfig = StandardLevelConfig{
 		SteinSpalten:              16,
@@ -51,6 +55,7 @@ var (
 		PlattformMaxSpeed:         30,
 		BallMaxSpeedX:             12,
 		BallMaxSpeedY:             7,
+		Störkugel:                 true,
 	}
 	StandardLevelExpertConfig = StandardLevelConfig{
 		SteinSpalten:              18,
@@ -60,6 +65,7 @@ var (
 		PlattformMaxSpeed:         100,
 		BallMaxSpeedX:             20,
 		BallMaxSpeedY:             9,
+		Störkugel:                 true,
 	}
 )
 
@@ -75,6 +81,12 @@ func NewStandardLevel(config StandardLevelConfig) *world {
 
 		plattformHoehe = 40
 		plattformY     = ui.Height - plattformHoehe*2
+
+		störkugelRadius    = 13 // Das kann nur Unglück bringen
+		störkugelStartX    = ui.Width/2 - störkugelRadius
+		störkugelStartY    = ballStartY + ballRadius*4
+		störkugelMaxSpeedX = 2
+		störkugelMaySpeedY = 2
 	)
 
 	var (
@@ -84,7 +96,7 @@ func NewStandardLevel(config StandardLevelConfig) *world {
 		platformStartX = ui.Width/2 - config.PlattformBreite/2
 	)
 
-	world := world{
+	w := world{
 		entities: map[*entity]struct{}{
 			// Plattform
 			{
@@ -205,9 +217,51 @@ func NewStandardLevel(config StandardLevelConfig) *world {
 				stein.rectComponent.farbe = stein.steinComponent.upgrade.farbe()
 			}
 
-			world.entities[&stein] = struct{}{}
+			w.entities[&stein] = struct{}{}
 		}
 	}
 
-	return &world
+	if config.Störkugel {
+		störkugel := entity{
+			position: position{
+				x: störkugelStartX,
+				y: störkugelStartY,
+			},
+			hatVelocityComponent: true,
+			velocityComponent: velocityComponent{
+				velocityX: 0,
+				velocityY: -störkugelMaySpeedY,
+			},
+			hatRenderComponent: true,
+			renderComponent: renderComponent{
+				layer: renderLayerStörkugel,
+			},
+			hatCircleComponent: true,
+			circleComponent: circleComponent{
+				radius: störkugelRadius,
+				farbe:  colornames.Brown,
+			},
+			hatHitboxComponent: true,
+			hitboxComponent: hitboxComponent{
+				width:  störkugelRadius * 2,
+				height: störkugelRadius * 2,
+			},
+			hatAmRandAbprallenComponent: true,
+			amRandAbprallenComponent: amRandAbprallenComponent{
+				oben:   true,
+				unten:  true,
+				links:  true,
+				rechts: true,
+			},
+			hatAnHitboxenAbprallenComponent: true,
+			anHitboxenAbprallenComponent: anHitboxenAbprallenComponent{
+				maxXSpeed: störkugelMaxSpeedX,
+				maxYSpeed: störkugelMaySpeedY,
+			},
+		}
+
+		w.entities[&störkugel] = struct{}{}
+	}
+
+	return &w
 }

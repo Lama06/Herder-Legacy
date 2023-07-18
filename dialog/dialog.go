@@ -39,13 +39,8 @@ func NewDialogScreen(
 	for i, antwort := range antworten {
 		antwort := antwort
 		antwortKnoepfe[i] = ui.NewButton(ui.ButtonConfig{
-			Position: ui.Position{
-				X:                ui.Width / 2,
-				Y:                ui.Height - float64(i)*100 - 30,
-				AnchorHorizontal: ui.HorizontalerAnchorMitte,
-				AnchorVertikal:   ui.VertikalerAnchorUnten,
-			},
-			Text: antwort.Text,
+			Position: ui.NewCenteredPosition(ui.Width/2, ui.Height-float64(len(antworten))*80+float64(i)*80),
+			Text:     antwort.Text,
 			Callback: func() {
 				herderLegacy.OpenScreen(antwort.Screen())
 			},
@@ -61,8 +56,13 @@ func NewDialogScreen(
 
 		text: text,
 		textWidget: ui.NewText(ui.TextConfig{
-			Position: ui.NewCenteredPosition(ui.Width/2, ui.Height/2),
-			Text:     "",
+			Position: ui.Position{
+				X:                ui.Width / 2,
+				Y:                175,
+				AnchorHorizontal: ui.HorizontalerAnchorMitte,
+				AnchorVertikal:   ui.VertikalerAnchorOben,
+			},
+			Text: "",
 		}),
 		angezeigteZeichen: 0,
 

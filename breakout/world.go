@@ -50,8 +50,8 @@ type entity struct {
 
 	imAusEntfernen bool
 
-	hatTimerComponent bool
-	timerComponent    timerComponent
+	hatSpawnerComponent bool
+	spawnerComponent    spawnerComponent
 
 	istBall bool
 
@@ -66,9 +66,6 @@ type entity struct {
 
 	hatKanonenKugelComponent bool
 	kanonenKugelComponent    kanonenKugelComponent
-
-	hatKanonenKugelSpawnerComponent bool
-	kanonenKugelSpawnerComponent    kanonenKugelSpawnerComponent
 
 	hatRainbowModeColorChangeComponent bool
 	rainbowModeColorChangeComponent    rainbowModeColorChangeComponent
@@ -91,9 +88,8 @@ func (w *world) update() {
 	w.anHitboxenAbprallen()
 	w.moveWithInput()
 	w.imAusEntfernen()
-	w.timersRunterzählen()
 	w.fallendeUpgradesAufsammeln()
-	w.kanonenKugelnSpawnen()
+	w.entitesSpawnen()
 	w.mitKanonenKugelnSteinZerstören()
 	w.changeColorsInRainbowMode()
 	w.tickFasterInputUpgradeTimer()

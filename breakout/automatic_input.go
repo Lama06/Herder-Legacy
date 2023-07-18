@@ -2,6 +2,7 @@ package breakout
 
 import (
 	"image/color"
+	"math"
 	"math/rand"
 	"sort"
 
@@ -51,27 +52,21 @@ func (w *world) performAutomaticInput() {
 			possibleEntities = append(possibleEntities, possibleEntity)
 		}
 
-		sort.Slice(possibleEntities, func(i, j int) bool {
-			distanceToI := distance(
-				inputEntity.position.x,
-				inputEntity.position.y,
-				possibleEntities[i].position.x,
-				possibleEntities[i].position.y,
-			)
-			distanceToJ := distance(
-				inputEntity.position.x,
-				inputEntity.position.y,
-				possibleEntities[j].position.x,
-				possibleEntities[j].position.y,
-			)
-			return distanceToI < distanceToJ
-		})
-
 		if inputEntity.moveWithInputComponent.x {
+			sort.Slice(possibleEntities, func(i, j int) bool {
+				distanceToI := math.Abs(inputEntity.position.y - possibleEntities[i].position.y)
+				distanceToJ := math.Abs(inputEntity.position.y - possibleEntities[j].position.y)
+				return distanceToI < distanceToJ
+			})
 			inputEntity.position.x = possibleEntities[0].position.x + inputEntity.moveWithInputComponent.offsetX
 		}
 
 		if inputEntity.moveWithInputComponent.y {
+			sort.Slice(possibleEntities, func(i, j int) bool {
+				distanceToI := math.Abs(inputEntity.position.x - possibleEntities[i].position.x)
+				distanceToJ := math.Abs(inputEntity.position.x - possibleEntities[j].position.x)
+				return distanceToI < distanceToJ
+			})
 			inputEntity.position.y = possibleEntities[0].position.y + inputEntity.moveWithInputComponent.offsetY
 		}
 	}
