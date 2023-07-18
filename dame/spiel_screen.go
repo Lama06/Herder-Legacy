@@ -46,11 +46,11 @@ type spielScreen struct {
 
 var _ herderlegacy.Screen = (*spielScreen)(nil)
 
-func newSpielScreen(
+func NewLehrerDameSpielScreen(
 	herderLegacy herderlegacy.HerderLegacy,
 	nächsterScreen func(gewonnen bool) herderlegacy.Screen,
 	optionen SpielOptionen,
-) *spielScreen {
+) herderlegacy.Screen {
 	return &spielScreen{
 		herderLegacy:   herderLegacy,
 		nächsterScreen: nächsterScreen,
@@ -63,7 +63,9 @@ func newSpielScreen(
 				AnchorHorizontal: ui.HorizontalerAnchorLinks,
 				AnchorVertikal:   ui.VertikalerAnchorOben,
 			},
-			Text: "Aufgeben",
+			Text:               "Aufgeben",
+			CustomColorPalette: true,
+			ColorPalette:       ui.CancelButtonColorPalette,
 			Callback: func() {
 				herderLegacy.OpenScreen(nächsterScreen(false))
 			},

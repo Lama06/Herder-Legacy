@@ -31,8 +31,8 @@ var alleLehrer = []lehrer{
 		nameAkkusativ:    "Herrn Preuß",
 		personalPronomen: "Er",
 		info: `Herr Preuß spielt mit internationalen Dame Regeln.
-		Das heißt, dass auf einem 8x8 großen Spielbrett gespielt wird.
-		Normale Steine sowie Damen können sich diagonal bewegen und diagonal schlagen.`,
+Das heißt, dass auf einem 8x8 großen Spielbrett gespielt wird.
+Normale Steine sowie Damen können sich diagonal bewegen und diagonal schlagen.`,
 		spielOptionen: SpielOptionen{
 			StartBrett: MustParseBrett(
 				"_l_l_l_l",
@@ -53,7 +53,7 @@ var alleLehrer = []lehrer{
 		nameAkkusativ:    "Herrn Münch",
 		personalPronomen: "Er",
 		info: `Herr Münch spielt mit internationalen Dame Regeln, allerdings auf einem 8x16 Spielbrett, also auf zwei Spielbrettern übereinander.
-		Normale Steine sowie Damen können sich weiterhin diagonal bewegen und diagonal schlagen.`,
+Normale Steine sowie Damen können sich weiterhin diagonal bewegen und diagonal schlagen.`,
 		spielOptionen: SpielOptionen{
 			StartBrett: MustParseBrett(
 				"_l_l_l_l",
@@ -82,8 +82,8 @@ var alleLehrer = []lehrer{
 		nameAkkusativ:    "Herrn Weber",
 		personalPronomen: "Er",
 		info: `Herr Weber spielt mit altdeutschen Dameregeln.
-		Die Steine werden zwar diagonal bewegt, schlagen aber seitwärts (nach links und rechts), diagonal und vorwärts.
-		Damen können sich nach oben, unten, links und rechts bewegen.`,
+Die Steine werden zwar diagonal bewegt, schlagen aber seitwärts (nach links und rechts), diagonal und vorwärts.
+Damen können sich nach oben, unten, links und rechts bewegen.`,
 		spielOptionen: SpielOptionen{
 			StartBrett: MustParseBrett(
 				"llllllll",

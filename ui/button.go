@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
+	"golang.org/x/image/colornames"
 )
 
 const (
@@ -96,17 +97,25 @@ func (b ButtonColorPalette) textColor(hovered, disabled bool) color.Color {
 	return b.TextColor
 }
 
-var defaultButtonColorPalette = ButtonColorPalette{
-	BackgroundColor:        color.RGBA{R: 18, G: 53, B: 91, A: 255},
-	BackgroundColorHovered: color.RGBA{R: 134, G: 22, B: 87, A: 255},
-	TextColor:              color.RGBA{R: 212, G: 245, B: 245, A: 255},
-	TextColorHovered:       color.RGBA{R: 212, G: 245, B: 245, A: 255},
+var (
+	CancelButtonColorPalette = ButtonColorPalette{
+		BackgroundColor:        colornames.Red,
+		BackgroundColorHovered: colornames.Darkred,
+		TextColor:              colornames.Whitesmoke,
+		TextColorHovered:       colornames.White,
+	}
+	defaultButtonColorPalette = ButtonColorPalette{
+		BackgroundColor:        color.RGBA{R: 18, G: 53, B: 91, A: 255},
+		BackgroundColorHovered: color.RGBA{R: 134, G: 22, B: 87, A: 255},
+		TextColor:              color.RGBA{R: 212, G: 245, B: 245, A: 255},
+		TextColorHovered:       color.RGBA{R: 212, G: 245, B: 245, A: 255},
 
-	BackgroundColorDisabled:        color.RGBA{R: 42, G: 59, B: 82, A: 255},
-	BackgroundColorHoveredDisabled: color.RGBA{R: 29, G: 37, B: 48, A: 255},
-	TextColorDisabled:              color.RGBA{R: 212, G: 245, B: 245, A: 255},
-	TextColorHoveredDisabled:       color.RGBA{R: 212, G: 245, B: 245, A: 255},
-}
+		BackgroundColorDisabled:        color.RGBA{R: 42, G: 59, B: 82, A: 255},
+		BackgroundColorHoveredDisabled: color.RGBA{R: 29, G: 37, B: 48, A: 255},
+		TextColorDisabled:              color.RGBA{R: 212, G: 245, B: 245, A: 255},
+		TextColorHoveredDisabled:       color.RGBA{R: 212, G: 245, B: 245, A: 255},
+	}
+)
 
 type ButtonConfig struct {
 	Position           Position

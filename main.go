@@ -3,6 +3,7 @@ package main
 import (
 	"runtime"
 
+	"github.com/Lama06/Herder-Legacy/breakout"
 	"github.com/Lama06/Herder-Legacy/dame"
 	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
@@ -59,7 +60,15 @@ func main() {
 		return dialog.NewDialogScreen(
 			&herderLegacy,
 			"Herr Weber",
-			"HalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHalloHallloHalloHalloHalloHallo",
+			"HalloHalloHallolloHao",
+			dialog.NewAntwort("Tschau3", func() herderlegacy.Screen {
+				return breakout.NewBreakoutScreen(
+					&herderLegacy,
+					func(gewonnen bool) herderlegacy.Screen {
+						return newMenuScreen()
+					},
+				)
+			}),
 			dialog.NewAntwort("Tschau2", func() herderlegacy.Screen {
 				return passwortdreher.NewPasswortDreherScreen(
 					&herderLegacy,
@@ -79,45 +88,9 @@ func main() {
 				)
 			}),
 			dialog.NewAntwort("Hallo", func() herderlegacy.Screen {
-				return dame.NewLehrerDameSpielScreen(
+				return dame.NewFreierModusScreen(
 					&herderLegacy,
-					dame.SpielOptionen{
-						StartBrett: dame.MustParseBrett(
-							"_l_l_l_l",
-							"l_l_l_l_",
-							"_l_l_l_l",
-							"________",
-							"________",
-							"s_s_s_s_",
-							"_s_s_s_s",
-							"s_s_s_s_",
-						),
-						ZugRegeln: dame.InternationaleZugRegeln,
-						AiTiefe:   5,
-					},
-					func(gewonnen bool) herderlegacy.Screen {
-						if gewonnen {
-							return dialog.NewDialogScreen(
-								&herderLegacy,
-								"Herr Weber",
-								"Gut gemacht",
-							)
-						}
-						return dialog.NewDialogScreen(
-							&herderLegacy,
-							"Herr Weber",
-							"Verdammt",
-							dialog.NewAntwort("Tschau", func() herderlegacy.Screen {
-								return dame.NewFreierModusScreen(&herderLegacy, func() herderlegacy.Screen {
-									return dialog.NewDialogScreen(
-										&herderLegacy,
-										"Herr Weber",
-										"Gut gemacht",
-									)
-								})
-							}),
-						)
-					},
+					newMenuScreen,
 				)
 			}),
 		)

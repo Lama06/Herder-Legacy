@@ -27,11 +27,6 @@ var (
 	verbleibendeVersucheFarben = ui.TextColorPalatte{
 		Color: colornames.Lightpink,
 	}
-	aufgebenKnopfFarbe = ui.ButtonColorPalette{
-		BackgroundColor:        colornames.Crimson,
-		TextColor:              colornames.Whitesmoke,
-		BackgroundColorHovered: colornames.Red,
-	}
 	mitelLinieFarbe         = colornames.Pink
 	falscherBuchstabeFarben = ui.TitleColorPalette{
 		Color: colornames.Ghostwhite,
@@ -130,7 +125,7 @@ func NewPasswortDreherScreenMitCustomPasswort(
 			},
 			Text:               "Aufgeben",
 			CustomColorPalette: true,
-			ColorPalette:       aufgebenKnopfFarbe,
+			ColorPalette:       ui.CancelButtonColorPalette,
 			Callback: func() {
 				herderLegacy.OpenScreen(nächsterScreen(false))
 			},
