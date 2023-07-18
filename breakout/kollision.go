@@ -18,7 +18,6 @@ type amRandAbprallenComponent struct {
 type anHitboxenAbprallenComponent struct {
 	minXSpeed, maxXSpeed float64
 	minYSpeed, maxYSpeed float64
-	steineZerstören      bool
 }
 
 func (e *entity) hitbox() aabb.Aabb {
@@ -77,7 +76,7 @@ func (w *world) amRandAbprallen() {
 	}
 }
 
-func geschwindigkeitNachAbprallen(
+func sekundärGeschwindigkeitNachAbprallen(
 	hitboxCenter float64,
 	otherHitboxCenter float64,
 	otherHitboxSize float64,
@@ -126,7 +125,7 @@ func (w *world) anHitboxenAbprallen() {
 				continue
 			}
 
-			if secondEntity.hatSteinComponent && firstEntity.anHitboxenAbprallenComponent.steineZerstören {
+			if secondEntity.hatSteinComponent && firstEntity.istBall {
 				delete(w.entities, secondEntity)
 				fallendesUpgradeSpawnen(w, secondEntity)
 			}
@@ -194,7 +193,7 @@ func (w *world) anHitboxenAbprallen() {
 				}
 			case firstHitbox.KollidiertMit(secondHitboxOben) || firstHitbox.KollidiertMit(secondHitboxUnten):
 				firstEntity.velocityComponent.velocityY = -signum(firstEntity.velocityComponent.velocityY) * firstEntity.anHitboxenAbprallenComponent.maxYSpeed
-				firstEntity.velocityComponent.velocityX = geschwindigkeitNachAbprallen(
+				firstEntity.velocityComponent.velocityX = sekundärGeschwindigkeitNachAbprallen(
 					firstHitbox.CenterX(),
 					secondHitbox.CenterX(),
 					secondHitbox.Width,
@@ -211,7 +210,7 @@ func (w *world) anHitboxenAbprallen() {
 				}
 			case firstHitbox.KollidiertMit(secondHitboxLinks) || firstHitbox.KollidiertMit(secondHitboxRechts):
 				firstEntity.velocityComponent.velocityX = -signum(firstEntity.velocityComponent.velocityX) * firstEntity.anHitboxenAbprallenComponent.maxXSpeed
-				firstEntity.velocityComponent.velocityY = geschwindigkeitNachAbprallen(
+				firstEntity.velocityComponent.velocityY = sekundärGeschwindigkeitNachAbprallen(
 					firstHitbox.CenterY(),
 					secondHitbox.CenterY(),
 					secondHitbox.Height,

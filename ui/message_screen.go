@@ -43,7 +43,7 @@ func NewMessageScreen(herderLegacy herderlegacy.HerderLegacy, config MessageScre
 		text: NewText(TextConfig{
 			Position: Position{
 				X:                Width / 2,
-				Y:                200,
+				Y:                175,
 				AnchorHorizontal: HorizontalerAnchorMitte,
 				AnchorVertikal:   VertikalerAnchorOben,
 			},

@@ -55,7 +55,7 @@ func NewDecideScreen(herderLegacy herderlegacy.HerderLegacy, config DecideScreen
 		text: NewText(TextConfig{
 			Position: Position{
 				X:                Width / 2,
-				Y:                200,
+				Y:                175,
 				AnchorHorizontal: HorizontalerAnchorMitte,
 				AnchorVertikal:   VertikalerAnchorOben,
 			},

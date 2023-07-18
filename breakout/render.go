@@ -12,9 +12,9 @@ type renderLayer int
 
 const (
 	renderLayerStein renderLayer = iota
-	renderLayerKanonenKugel
 	renderLayerFallendesUpgrade
 	renderLayerPlattform
+	renderLayerKanonenKugel
 	renderLayerBall
 )
 
@@ -48,24 +48,38 @@ func (w *world) renderObjects(screen *ebiten.Image) {
 
 	for _, entity := range zuRenderndeEntities {
 		if entity.hatRectComponent {
+			var farbe color.Color
+			if entity.hatRainbowModeColorChangeComponent {
+				farbe = entity.rainbowModeColorChangeComponent.newColor
+			} else {
+				farbe = entity.rectComponent.farbe
+			}
+
 			vector.DrawFilledRect(
 				screen,
 				float32(entity.position.x),
 				float32(entity.position.y),
 				float32(entity.rectComponent.width),
 				float32(entity.rectComponent.height),
-				entity.rectComponent.farbe,
+				farbe,
 				true,
 			)
 		}
 
 		if entity.hatCircleComponent {
+			var farbe color.Color
+			if entity.hatRainbowModeColorChangeComponent {
+				farbe = entity.rainbowModeColorChangeComponent.newColor
+			} else {
+				farbe = entity.circleComponent.farbe
+			}
+
 			vector.DrawFilledCircle(
 				screen,
 				float32(entity.position.x+entity.circleComponent.radius),
 				float32(entity.position.y+entity.circleComponent.radius),
 				float32(entity.circleComponent.radius),
-				entity.circleComponent.farbe,
+				farbe,
 				true,
 			)
 		}

@@ -8,26 +8,26 @@ import (
 )
 
 type kanonenUpgrade struct {
-	kugeln      int
-	delay       int
-	speed       float64
-	kugelStärke int
+	anzahlKanonenKugeln int
+	kanonenKugelDelay   int
+	kanonenKugelSpeed   float64
+	kanonenKugelStärke  int
 }
 
 func newRandomKanonenUpgrade() upgrade {
 	return kanonenUpgrade{
-		kugeln:      5 + rand.Intn(5),
-		delay:       30 + rand.Intn(5*60),
-		speed:       0.5 + 7*rand.Float64(),
-		kugelStärke: 1 + rand.Intn(2),
+		anzahlKanonenKugeln: 5 + rand.Intn(5),
+		kanonenKugelDelay:   30 + rand.Intn(5*60),
+		kanonenKugelSpeed:   0.5 + 7*rand.Float64(),
+		kanonenKugelStärke:  1 + rand.Intn(2),
 	}
 }
 
 var _ upgrade = kanonenUpgrade{}
 
 func (f kanonenUpgrade) radius() float64 {
-	if f.kugelStärke == 2 {
-		return 20
+	if f.kanonenKugelStärke == 2 {
+		return 25
 	}
 	return 15
 }
@@ -39,12 +39,12 @@ func (f kanonenUpgrade) farbe() color.Color {
 func (f kanonenUpgrade) collect(world *world, plattform *entity) {
 	plattform.hatKanonenKugelSpawnerComponent = true
 	plattform.kanonenKugelSpawnerComponent = kanonenKugelSpawnerComponent{
-		kanonenKugelSpeedX:        float64(plattform.plattformComponent.schießrichtungX) * f.speed,
-		kanonenKugelSpeedY:        float64(plattform.plattformComponent.schießrichtungY) * f.speed,
-		verbleibendeKanonenKugeln: f.kugeln,
-		kanoneKugelSchießDelay:    f.delay,
-		nächsteKanonenKugel:       f.delay,
-		kanonenKugelStärke:        f.kugelStärke,
+		kanonenKugelSpeedX:        float64(plattform.plattformComponent.schießrichtungX) * f.kanonenKugelSpeed,
+		kanonenKugelSpeedY:        float64(plattform.plattformComponent.schießrichtungY) * f.kanonenKugelSpeed,
+		verbleibendeKanonenKugeln: f.anzahlKanonenKugeln,
+		kanoneKugelSchießDelay:    f.kanonenKugelDelay,
+		nächsteKanonenKugel:       f.kanonenKugelDelay,
+		kanonenKugelStärke:        f.kanonenKugelStärke,
 	}
 }
 
@@ -85,8 +85,8 @@ func (w *world) kanonenKugelnSpawnen() {
 
 		w.entities[&entity{
 			position: position{
-				x: kanonenKugelSpawnerHitbox.CenterX() - kanonenKugelRadius/2,
-				y: kanonenKugelSpawnerHitbox.CenterY() - kanonenKugelRadius/2,
+				x: kanonenKugelSpawnerHitbox.CenterX() - kanonenKugelRadius,
+				y: kanonenKugelSpawnerHitbox.CenterY() - kanonenKugelRadius,
 			},
 			hatVelocityComponent: true,
 			velocityComponent: velocityComponent{

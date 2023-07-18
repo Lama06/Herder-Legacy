@@ -62,11 +62,9 @@ func main() {
 			"Herr Weber",
 			"HalloHalloHallolloHao",
 			dialog.NewAntwort("Tschau3", func() herderlegacy.Screen {
-				return breakout.NewBreakoutScreen(
+				return breakout.NewFreierModusScreen(
 					&herderLegacy,
-					func(gewonnen bool) herderlegacy.Screen {
-						return newMenuScreen()
-					},
+					newMenuScreen,
 				)
 			}),
 			dialog.NewAntwort("Tschau2", func() herderlegacy.Screen {

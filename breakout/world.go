@@ -2,6 +2,7 @@ package breakout
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"golang.org/x/image/colornames"
 )
 
 type position struct {
@@ -21,12 +22,6 @@ type steinComponent struct {
 type entity struct {
 	position position
 
-	hatVelocityComponent bool
-	velocityComponent    velocityComponent
-
-	hatMovesWithInputComponent bool
-	moveWithInputComponent     moveWithInputComponent
-
 	hatRenderComponent bool
 	renderComponent    renderComponent
 
@@ -36,27 +31,35 @@ type entity struct {
 	hatCircleComponent bool
 	circleComponent    circleComponent
 
+	hatVelocityComponent bool
+	velocityComponent    velocityComponent
+
+	hatMovesWithInputComponent bool
+	moveWithInputComponent     moveWithInputComponent
+
+	affectsAutomaticInput bool
+
 	hatAmRandAbprallenComponent bool
 	amRandAbprallenComponent    amRandAbprallenComponent
 
-	hatAnHitboxenAbprallenComponent bool
-	anHitboxenAbprallenComponent    anHitboxenAbprallenComponent
-
 	hatHitboxComponent bool
 	hitboxComponent    hitboxComponent
+
+	hatAnHitboxenAbprallenComponent bool
+	anHitboxenAbprallenComponent    anHitboxenAbprallenComponent
 
 	imAusEntfernen bool
 
 	hatTimerComponent bool
 	timerComponent    timerComponent
 
+	istBall bool
+
 	hatSteinComponent bool
 	steinComponent    steinComponent
 
 	hatPlattformComponent bool
 	plattformComponent    plattformComponent
-
-	istBall bool
 
 	hatFallendesUpgradeComponent bool
 	fallendesUpgradeComponent    fallendesUpgradeComponent
@@ -67,7 +70,8 @@ type entity struct {
 	hatKanonenKugelSpawnerComponent bool
 	kanonenKugelSpawnerComponent    kanonenKugelSpawnerComponent
 
-	affectsAutomaticInput bool
+	hatRainbowModeColorChangeComponent bool
+	rainbowModeColorChangeComponent    rainbowModeColorChangeComponent
 }
 
 type world struct {
@@ -98,6 +102,7 @@ func (w *world) update() {
 }
 
 func (w *world) draw(screen *ebiten.Image) {
+	screen.Fill(colornames.Black)
 	w.renderObjects(screen)
 }
 

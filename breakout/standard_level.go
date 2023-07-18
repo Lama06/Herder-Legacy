@@ -37,7 +37,7 @@ var (
 	StandardLevelMediumConfig = StandardLevelConfig{
 		SteinSpalten:              13,
 		SteinZeilen:               7,
-		UpgradeWahrscheinlichkeit: 0.1,
+		UpgradeWahrscheinlichkeit: 0.2,
 		PlattformBreite:           ui.Width / 4,
 		PlattformMaxSpeed:         8,
 		BallMaxSpeedX:             8,
@@ -46,11 +46,20 @@ var (
 	StandardLevelHardConfig = StandardLevelConfig{
 		SteinSpalten:              16,
 		SteinZeilen:               12,
-		UpgradeWahrscheinlichkeit: 0.03,
+		UpgradeWahrscheinlichkeit: 0.2,
 		PlattformBreite:           ui.Width / 8,
 		PlattformMaxSpeed:         30,
-		BallMaxSpeedX:             7,
+		BallMaxSpeedX:             12,
 		BallMaxSpeedY:             7,
+	}
+	StandardLevelExpertConfig = StandardLevelConfig{
+		SteinSpalten:              18,
+		SteinZeilen:               14,
+		UpgradeWahrscheinlichkeit: 0.2,
+		PlattformBreite:           ui.Width / 16,
+		PlattformMaxSpeed:         100,
+		BallMaxSpeedX:             20,
+		BallMaxSpeedY:             9,
 	}
 )
 
@@ -60,11 +69,11 @@ func NewStandardLevel(config StandardLevelConfig) *world {
 		steinAbstandX     = 20
 		steinAbstandY     = 20
 
-		ballRadius = 25
+		ballRadius = 20
 		ballStartX = ui.Width/2 - ballRadius
 		ballStartY = ui.Height * (3.0 / 4.0)
 
-		plattformHoehe = 50
+		plattformHoehe = 40
 		plattformY     = ui.Height - plattformHoehe*2
 	)
 
@@ -143,10 +152,9 @@ func NewStandardLevel(config StandardLevelConfig) *world {
 				},
 				hatAnHitboxenAbprallenComponent: true,
 				anHitboxenAbprallenComponent: anHitboxenAbprallenComponent{
-					maxXSpeed:       config.BallMaxSpeedX,
-					maxYSpeed:       config.BallMaxSpeedY,
-					minYSpeed:       config.BallMaxSpeedY,
-					steineZerstören: true,
+					maxXSpeed: config.BallMaxSpeedX,
+					maxYSpeed: config.BallMaxSpeedY,
+					minYSpeed: config.BallMaxSpeedY / 10,
 				},
 				hatAmRandAbprallenComponent: true,
 				amRandAbprallenComponent: amRandAbprallenComponent{
@@ -157,6 +165,7 @@ func NewStandardLevel(config StandardLevelConfig) *world {
 				},
 				imAusEntfernen:        true,
 				affectsAutomaticInput: true,
+				istBall:               true,
 			}: {},
 		},
 	}

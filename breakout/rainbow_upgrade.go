@@ -37,8 +37,15 @@ func (r rainbowUpgrade) collect(world *world, plattform *entity) {
 	world.rainbowUpgradeChangeFrequency = r.changeFrequency
 }
 
+type rainbowModeColorChangeComponent struct {
+	newColor color.Color
+}
+
 func (w *world) changeColorsInRainbowMode() {
 	if w.rainbowUpgradeRemainingTime <= 0 {
+		for entity := range w.entities {
+			entity.hatRainbowModeColorChangeComponent = false
+		}
 		return
 	}
 	w.rainbowUpgradeRemainingTime--
@@ -54,12 +61,9 @@ func (w *world) changeColorsInRainbowMode() {
 
 		neueFarbe := rainbowColors[rand.Intn(len(rainbowColors))]
 
-		if entity.hatRectComponent {
-			entity.rectComponent.farbe = neueFarbe
-		}
-
-		if entity.hatCircleComponent {
-			entity.circleComponent.farbe = neueFarbe
+		entity.hatRainbowModeColorChangeComponent = true
+		entity.rainbowModeColorChangeComponent = rainbowModeColorChangeComponent{
+			newColor: neueFarbe,
 		}
 	}
 }

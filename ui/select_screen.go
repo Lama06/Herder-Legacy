@@ -49,7 +49,7 @@ func NewSelectScreen(herderLegacy herderlegacy.HerderLegacy, config SelectScreen
 	for i, auswahlMöglichkeit := range config.AuswahlMöglichkeiten {
 		auswahlMöglichkeit := auswahlMöglichkeit
 		auswahlKnöpfe[i] = NewButton(ButtonConfig{
-			Position: NewCenteredPosition(Width/2, 300+80*float64(i)),
+			Position: NewCenteredPosition(Width/2, 275+80*float64(i)),
 			Text:     auswahlMöglichkeit.Text,
 			Callback: func() {
 				herderLegacy.OpenScreen(auswahlMöglichkeit.Action())
@@ -86,7 +86,7 @@ func NewSelectScreen(herderLegacy herderlegacy.HerderLegacy, config SelectScreen
 		text: NewText(TextConfig{
 			Position: Position{
 				X:                Width / 2,
-				Y:                200,
+				Y:                175,
 				AnchorHorizontal: HorizontalerAnchorMitte,
 				AnchorVertikal:   VertikalerAnchorOben,
 			},

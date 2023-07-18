@@ -1,6 +1,9 @@
 package breakout
 
-import "github.com/Lama06/Herder-Legacy/ui"
+import (
+	"github.com/Lama06/Herder-Legacy/aabb"
+	"github.com/Lama06/Herder-Legacy/ui"
+)
 
 func (w *world) imAusEntfernen() {
 	for entity := range w.entities {
@@ -8,15 +11,9 @@ func (w *world) imAusEntfernen() {
 			continue
 		}
 
-		var width, height float64
-		if entity.hatHitboxComponent {
-			width, height = entity.hitboxComponent.width, entity.hitboxComponent.height
-		}
-
-		if entity.position.x+width < 0 ||
-			entity.position.y+height < 0 ||
-			entity.position.x > ui.Width ||
-			entity.position.y > ui.Height {
+		if !entity.hitbox().KollidiertMit(aabb.Aabb{
+			X: 0, Y: 0, Width: ui.Width, Height: ui.Height,
+		}) {
 			delete(w.entities, entity)
 		}
 	}

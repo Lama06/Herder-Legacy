@@ -22,7 +22,7 @@ func newRandomFasterInputUpgrade() upgrade {
 }
 
 func (f fasterInputUpgrade) farbe() color.Color {
-	return colornames.Wheat
+	return colornames.Yellow
 }
 
 func (f fasterInputUpgrade) radius() float64 {

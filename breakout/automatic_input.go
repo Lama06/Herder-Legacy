@@ -16,12 +16,12 @@ var _ upgrade = automaticInputUpgrade{}
 
 func newRandomAutomaticInputUpgrade() upgrade {
 	return automaticInputUpgrade{
-		duration: 60 * (5 + rand.Intn(6)),
+		duration: 60 * (9 + rand.Intn(7)),
 	}
 }
 
 func (a automaticInputUpgrade) farbe() color.Color {
-	return colornames.Aquamarine
+	return colornames.Lightgreen
 }
 
 func (a automaticInputUpgrade) radius() float64 {
