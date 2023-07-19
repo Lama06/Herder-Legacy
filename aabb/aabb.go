@@ -46,6 +46,18 @@ func (aabb1 Aabb) KollidiertMit(aabb2 Aabb) bool {
 	return true
 }
 
+func (aabb Aabb) IsInside(x, y float64) bool {
+	if x < aabb.X || x > aabb.MaxX() {
+		return false
+	}
+
+	if y < aabb.Y || y > aabb.MaxY() {
+		return false
+	}
+
+	return true
+}
+
 func (aabb1 Aabb) Intersection(aabb2 Aabb) (intersection Aabb, ok bool) {
 	if !aabb1.KollidiertMit(aabb2) {
 		return Aabb{}, false

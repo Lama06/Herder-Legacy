@@ -1,6 +1,7 @@
 package breakout
 
 import (
+	"github.com/Lama06/Herder-Legacy/konfetti"
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/colornames"
 )
@@ -74,6 +75,8 @@ type entity struct {
 type world struct {
 	entities map[*entity]struct{}
 
+	konfetti *konfetti.KonfettiManager
+
 	rainbowUpgradeRemainingTime   int
 	rainbowUpgradeChangeFrequency int
 
@@ -99,11 +102,13 @@ func (w *world) update() {
 	w.performAutomaticInput()
 	w.amRandAbprallen()
 	w.tickZeitUpgrade()
+	w.konfetti.Update()
 }
 
 func (w *world) draw(screen *ebiten.Image) {
 	screen.Fill(colornames.Black)
 	w.renderObjects(screen)
+	w.konfetti.Draw(screen)
 }
 
 func (w *world) gewonnen() bool {

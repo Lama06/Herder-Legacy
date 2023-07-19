@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/Lama06/Herder-Legacy/konfetti"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"golang.org/x/image/colornames"
 )
@@ -76,6 +77,8 @@ func NewPongLevel(config PongLevelConfig) *world {
 	)
 
 	w := world{
+		konfetti: konfetti.NewKonfettiManager(),
+
 		entities: map[*entity]struct{}{
 			// Plattform 1
 			{
@@ -253,21 +256,27 @@ func NewPongLevel(config PongLevelConfig) *world {
 						},
 					}
 
+					if rand.Float64() < 0.5 {
+						stein.steinComponent.upgradeSpeedX = 2
+					} else {
+						stein.steinComponent.upgradeSpeedX = -2
+					}
+
 					if rand.Float64() < config.UpgradeWahrscheinlichkeit {
 						stein.steinComponent.hatUpgrade = true
 						stein.steinComponent.upgrade = newRandomUpgrade()
-						if rand.Float64() < 0.5 {
-							stein.steinComponent.upgradeSpeedX = 1
-						} else {
-							stein.steinComponent.upgradeSpeedX = -1
-						}
-
 						stein.rectComponent.farbe = stein.steinComponent.upgrade.farbe()
 					}
 
 					return &stein
 				},
 			},
+		}
+
+		if rand.Float64() < 0.5 {
+			spawnStein.steinComponent.upgradeSpeedX = 2
+		} else {
+			spawnStein.steinComponent.upgradeSpeedX = -2
 		}
 
 		w.entities[&spawnStein] = struct{}{}

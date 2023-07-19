@@ -3,6 +3,7 @@ package breakout
 import (
 	"math/rand"
 
+	"github.com/Lama06/Herder-Legacy/konfetti"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"golang.org/x/image/colornames"
 )
@@ -97,6 +98,8 @@ func NewStandardLevel(config StandardLevelConfig) *world {
 	)
 
 	w := world{
+		konfetti: konfetti.NewKonfettiManager(),
+
 		entities: map[*entity]struct{}{
 			// Plattform
 			{

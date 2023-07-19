@@ -128,6 +128,7 @@ func (w *world) anHitboxenAbprallen() {
 			if secondEntity.hatSteinComponent && firstEntity.istBall {
 				delete(w.entities, secondEntity)
 				fallendesUpgradeSpawnen(w, secondEntity)
+				w.konfetti.SpawnKonfetti(secondHitbox.CenterX(), secondHitbox.CenterY())
 			}
 
 			switch {
