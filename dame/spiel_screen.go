@@ -213,16 +213,6 @@ func (s *spielScreen) Update() {
 		return
 	}
 
-	if s.brett.gewonnen(spielerSchüler, s.optionen.ZugRegeln) {
-		s.herderLegacy.OpenScreen(s.nächsterScreen(true))
-		return
-	}
-
-	if s.brett.gewonnen(spielerLehrer, s.optionen.ZugRegeln) {
-		s.herderLegacy.OpenScreen(s.nächsterScreen(false))
-		return
-	}
-
 	s.aufgebenKnopf.Update()
 
 	for _, verlorenerStein := range s.geschlageneSteine {
@@ -234,6 +224,16 @@ func (s *spielScreen) Update() {
 	}
 
 	if zugLäuft := s.zugAusführen(); zugLäuft {
+		return
+	}
+
+	if s.brett.gewonnen(spielerSchüler, s.optionen.ZugRegeln) {
+		s.herderLegacy.OpenScreen(s.nächsterScreen(true))
+		return
+	}
+
+	if s.brett.gewonnen(spielerLehrer, s.optionen.ZugRegeln) {
+		s.herderLegacy.OpenScreen(s.nächsterScreen(false))
 		return
 	}
 

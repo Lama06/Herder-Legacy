@@ -75,6 +75,23 @@ func (f feld) zeichen() rune {
 	}
 }
 
+func (f feld) anzeigeName() string {
+	switch f {
+	case feldLeer:
+		return "Leeres Feld"
+	case feldSteinLehrer:
+		return "Stein von Lehrer"
+	case feldSteinSchüler:
+		return "Stein von Schüler"
+	case feldDameLehrer:
+		return "Dame von Lehrer"
+	case feldDameSchüler:
+		return "Dame von Schüler"
+	default:
+		panic("unreachable")
+	}
+}
+
 func (f feld) eigentümer() (eigentümer spieler, ok bool) {
 	switch f {
 	case feldLeer:

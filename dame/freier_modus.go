@@ -9,19 +9,39 @@ import (
 )
 
 func NewFreierModusScreen(herderLegacy herderlegacy.HerderLegacy, dameBeendenCallback func() herderlegacy.Screen) herderlegacy.Screen {
-	return ui.NewDecideScreen(herderLegacy, ui.DecideScreenConfig{
-		Title: "Dame",
-		Text: `Wenn du gegen einen Lehrer in Dame gewinnst, wird dieser ein wenig Motivation, zu unterrichten, verlieren.
+	return ui.NewListScreen(herderLegacy, ui.ListScreenConfig{
+		Title:        "Dame",
+		CancelText:   "Dame beenden",
+		CancelAction: dameBeendenCallback,
+		Widgets: []ui.ListScreenWidget{
+			ui.ListScreenButtonWidget{
+				Text: "Info",
+				Callback: func() {
+					herderLegacy.OpenScreen(ui.NewMessageScreen(herderLegacy, ui.MessageScreenConfig{
+						Title: "Dame",
+						Text: `Wenn du gegen einen Lehrer in Dame gewinnst, wird dieser ein wenig Motivation, zu unterrichten, verlieren.
 Du kannst auswählen gegen welchen Lehrer du antreten willst. 
 Beachte aber, dass jeder mit seinen eigenen Regeln und unterschiedlicher Stragie spielt.
 Hinweis: Teilweise kann es einige Sekunden dauern, um dem Zug des Lehrers zu berechnen.`,
-
-		CancelText:   "Schließen",
-		CancelAction: dameBeendenCallback,
-
-		ConfirmText: "Lehrer auswählen",
-		ConfirmAction: func() herderlegacy.Screen {
-			return newLehrerAuswahlScreen(herderLegacy, dameBeendenCallback)
+						ContinueText: "Los gehts!",
+						ContinueAction: func() herderlegacy.Screen {
+							return NewFreierModusScreen(herderLegacy, dameBeendenCallback)
+						},
+					}))
+				},
+			},
+			ui.ListScreenButtonWidget{
+				Text: "Gegen Lehrer Spielen",
+				Callback: func() {
+					herderLegacy.OpenScreen(newLehrerAuswahlScreen(herderLegacy, dameBeendenCallback))
+				},
+			},
+			ui.ListScreenButtonWidget{
+				Text: "Mit eigenen Regeln spielen",
+				Callback: func() {
+					herderLegacy.OpenScreen(newDameEditorScreen(herderLegacy, dameBeendenCallback))
+				},
+			},
 		},
 	})
 }

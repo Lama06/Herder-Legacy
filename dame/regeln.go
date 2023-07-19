@@ -1,29 +1,43 @@
 package dame
 
 type ZugRegeln struct {
-	SteinBewegenRichtungen                map[Richtung]struct{}
-	SteinSchlagenRichtungenAnfang         map[Richtung]struct{}
-	SteinSchlagenRichtungenWeiterschlagen map[Richtung]struct{}
+	SteinBewegenRichtungen                Richtungen
+	SteinSchlagenRichtungenAnfang         Richtungen
+	SteinSchlagenRichtungenWeiterschlagen Richtungen
 
-	DameBewegenRichtungen                map[Richtung]struct{}
-	DameSchlagenRichtungenAnfang         map[Richtung]struct{}
-	DameSchlagenRichtungenWeiterschlagen map[Richtung]struct{}
+	DameBewegenRichtungen                Richtungen
+	DameSchlagenRichtungenAnfang         Richtungen
+	DameSchlagenRichtungenWeiterschlagen Richtungen
 
 	SchlagZwang bool
 }
 
-func (z ZugRegeln) steinSchlagenRichtungen(weitschlagen bool) map[Richtung]struct{} {
+func (z ZugRegeln) steinSchlagenRichtungen(weitschlagen bool) Richtungen {
 	if weitschlagen {
 		return z.SteinSchlagenRichtungenWeiterschlagen
 	}
 	return z.SteinSchlagenRichtungenAnfang
 }
 
-func (z ZugRegeln) dameSchlagenRichtungen(weiterschlagen bool) map[Richtung]struct{} {
+func (z ZugRegeln) dameSchlagenRichtungen(weiterschlagen bool) Richtungen {
 	if weiterschlagen {
 		return z.DameSchlagenRichtungenWeiterschlagen
 	}
 	return z.DameSchlagenRichtungenAnfang
+}
+
+func (z ZugRegeln) clone() ZugRegeln {
+	return ZugRegeln{
+		SteinBewegenRichtungen:                z.SteinBewegenRichtungen.clone(),
+		SteinSchlagenRichtungenAnfang:         z.SteinSchlagenRichtungenAnfang.clone(),
+		SteinSchlagenRichtungenWeiterschlagen: z.SteinSchlagenRichtungenWeiterschlagen.clone(),
+
+		DameBewegenRichtungen:                z.DameBewegenRichtungen.clone(),
+		DameSchlagenRichtungenAnfang:         z.DameSchlagenRichtungenAnfang.clone(),
+		DameSchlagenRichtungenWeiterschlagen: z.DameSchlagenRichtungenWeiterschlagen.clone(),
+
+		SchlagZwang: z.SchlagZwang,
+	}
 }
 
 var (

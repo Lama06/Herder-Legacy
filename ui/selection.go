@@ -12,7 +12,17 @@ type SelectionConfig[T any] struct {
 	Text     string
 	Value    T
 	Values   []T
+	ToString func(T) string
 	Callback func(T)
+}
+
+func (s SelectionConfig[T]) toStringOrDefault() func(T) string {
+	if s.ToString == nil {
+		return func(value T) string {
+			return fmt.Sprint(value)
+		}
+	}
+	return s.ToString
 }
 
 type Selection[T any] struct {
@@ -36,7 +46,7 @@ func NewSelection[T any](herderLegacy herderlegacy.HerderLegacy, config Selectio
 		for i, möglichkeit := range config.Values {
 			möglichkeit := möglichkeit
 			widgets[i] = ListScreenButtonWidget{
-				Text: fmt.Sprint(möglichkeit),
+				Text: config.toStringOrDefault()(möglichkeit),
 				Callback: func() {
 					selection.SetValue(möglichkeit)
 					herderLegacy.OpenScreen(previousScreen)
@@ -65,7 +75,7 @@ func (s *Selection[T]) Value() T {
 
 func (s *Selection[T]) SetValue(value T) {
 	s.value = value
-	s.button.SetText(fmt.Sprintf("%v: %v", s.config.Text, value))
+	s.button.SetText(fmt.Sprintf("%v: %v", s.config.Text, s.config.toStringOrDefault()(value)))
 	if s.config.Callback != nil {
 		s.config.Callback(value)
 	}
