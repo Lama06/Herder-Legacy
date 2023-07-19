@@ -30,18 +30,18 @@ func newLehrerAuswahlScreen(
 	herderLegacy herderlegacy.HerderLegacy,
 	dameBeendenCallback func() herderlegacy.Screen,
 ) herderlegacy.Screen {
-	auswahlMöglichkeiten := make([]ui.SelectScreenAuswahlMöglichkeit, len(alleLehrer))
+	widgets := make([]ui.ListScreenWidget, len(alleLehrer))
 	for i, lehrer := range alleLehrer {
 		lehrer := lehrer
-		auswahlMöglichkeiten[i] = ui.SelectScreenAuswahlMöglichkeit{
+		widgets[i] = ui.ListScreenButtonWidget{
 			Text: lehrer.name,
-			Action: func() herderlegacy.Screen {
-				return newLehrerInfoScreen(herderLegacy, dameBeendenCallback, lehrer)
+			Callback: func() {
+				herderLegacy.OpenScreen(newLehrerInfoScreen(herderLegacy, dameBeendenCallback, lehrer))
 			},
 		}
 	}
 
-	return ui.NewSelectScreen(herderLegacy, ui.SelectScreenConfig{
+	return ui.NewListScreen(herderLegacy, ui.ListScreenConfig{
 		Title: "Lehrer auswählen",
 		Text:  "Wähle einen Lehrer, gegen den du spielen willst, aus",
 
@@ -50,7 +50,7 @@ func newLehrerAuswahlScreen(
 			return NewFreierModusScreen(herderLegacy, dameBeendenCallback)
 		},
 
-		AuswahlMöglichkeiten: auswahlMöglichkeiten,
+		Widgets: widgets,
 	})
 }
 

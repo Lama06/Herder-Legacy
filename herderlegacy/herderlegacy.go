@@ -9,6 +9,8 @@ type HerderLegacy interface {
 
 	AddVerhinderteStunden(stunden float64)
 
+	CurrentScreen() Screen
+
 	OpenScreen(screen Screen)
 }
 

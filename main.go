@@ -31,6 +31,10 @@ func (h *herderLegacy) AddVerhinderteStunden(stunden float64) {
 	h.verhinderteStunden += stunden
 }
 
+func (h *herderLegacy) CurrentScreen() herderlegacy.Screen {
+	return h.currentScreen
+}
+
 func (h *herderLegacy) OpenScreen(screen herderlegacy.Screen) {
 	h.currentScreen = screen
 }

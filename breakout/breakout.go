@@ -13,36 +13,36 @@ func NewFreierModusScreen(
 	herderLegacy herderlegacy.HerderLegacy,
 	breakoutBeendenCallback func() herderlegacy.Screen,
 ) herderlegacy.Screen {
-	return ui.NewSelectScreen(herderLegacy, ui.SelectScreenConfig{
+	return ui.NewListScreen(herderLegacy, ui.ListScreenConfig{
 		Title: "Breakout",
 		Text:  "Herr Hammdorfs Lieblingsspiel!",
 
 		CancelText:   "Breakout beenden",
 		CancelAction: breakoutBeendenCallback,
 
-		AuswahlMöglichkeiten: []ui.SelectScreenAuswahlMöglichkeit{
-			{
+		Widgets: []ui.ListScreenWidget{
+			ui.ListScreenButtonWidget{
 				Text: "Level auswählen",
-				Action: func() herderlegacy.Screen {
-					return newLevelSelectScreen(herderLegacy, breakoutBeendenCallback)
+				Callback: func() {
+					herderLegacy.OpenScreen(newLevelSelectScreen(herderLegacy, breakoutBeendenCallback))
 				},
 			},
-			{
+			ui.ListScreenButtonWidget{
 				Text: "Anleitung",
-				Action: func() herderlegacy.Screen {
-					return newAnleitungScreen(herderLegacy, breakoutBeendenCallback)
+				Callback: func() {
+					herderLegacy.OpenScreen(newAnleitungScreen(herderLegacy, breakoutBeendenCallback))
 				},
 			},
-			{
+			ui.ListScreenButtonWidget{
 				Text: "Hilfe zu Upgrades",
-				Action: func() herderlegacy.Screen {
-					return newHilfeZuUpgradesScreen(herderLegacy, breakoutBeendenCallback)
+				Callback: func() {
+					herderLegacy.OpenScreen(newHilfeZuUpgradesScreen(herderLegacy, breakoutBeendenCallback))
 				},
 			},
-			{
+			ui.ListScreenButtonWidget{
 				Text: "Tipps",
-				Action: func() herderlegacy.Screen {
-					return newTippsScreen(herderLegacy, breakoutBeendenCallback)
+				Callback: func() {
+					herderLegacy.OpenScreen(newTippsScreen(herderLegacy, breakoutBeendenCallback))
 				},
 			},
 		},
@@ -120,20 +120,20 @@ func newLevelSelectScreen(
 	herderLegacy herderlegacy.HerderLegacy,
 	breakoutBeendenCallback func() herderlegacy.Screen,
 ) herderlegacy.Screen {
-	auswahlMoeglichkeiten := make([]ui.SelectScreenAuswahlMöglichkeit, len(breakoutLevelListe))
+	widgets := make([]ui.ListScreenWidget, len(breakoutLevelListe))
 	for i, breakoutLevel := range breakoutLevelListe {
 		breakoutLevel := breakoutLevel
-		auswahlMoeglichkeiten[i] = ui.SelectScreenAuswahlMöglichkeit{
+		widgets[i] = ui.ListScreenButtonWidget{
 			Text: breakoutLevel.name,
-			Action: func() herderlegacy.Screen {
-				return NewBreakoutScreen(herderLegacy, breakoutLevel.worldCreator(), func(gewonnen bool) herderlegacy.Screen {
+			Callback: func() {
+				herderLegacy.OpenScreen(NewBreakoutScreen(herderLegacy, breakoutLevel.worldCreator(), func(gewonnen bool) herderlegacy.Screen {
 					return newGameOverScreen(herderLegacy, breakoutBeendenCallback, gewonnen)
-				})
+				}))
 			},
 		}
 	}
 
-	return ui.NewSelectScreen(herderLegacy, ui.SelectScreenConfig{
+	return ui.NewListScreen(herderLegacy, ui.ListScreenConfig{
 		Title: "Level auswählen",
 		Text:  "Wähle ein Breakoutlevel aus:",
 
@@ -142,7 +142,7 @@ func newLevelSelectScreen(
 			return NewFreierModusScreen(herderLegacy, breakoutBeendenCallback)
 		},
 
-		AuswahlMöglichkeiten: auswahlMoeglichkeiten,
+		Widgets: widgets,
 	})
 }
 
