@@ -2,8 +2,8 @@ package breakout
 
 import (
 	"image/color"
+	"math/rand"
 
-	"golang.org/x/exp/rand"
 	"golang.org/x/image/colornames"
 )
 
