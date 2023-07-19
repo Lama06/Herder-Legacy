@@ -87,6 +87,8 @@ type world struct {
 
 	zeitUpgradeRemainingTime int
 	zeitUpgradeFaktor        float64
+
+	abnahmeModusPasswort []rune
 }
 
 func (w *world) update() {
@@ -102,6 +104,7 @@ func (w *world) update() {
 	w.performAutomaticInput()
 	w.amRandAbprallen()
 	w.tickZeitUpgrade()
+	w.abnahmeModusPasswortLesen()
 	w.konfetti.Update()
 }
 
