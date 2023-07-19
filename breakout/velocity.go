@@ -10,7 +10,14 @@ func (w *world) moveWithVelocity() {
 			continue
 		}
 
-		entity.position.x += entity.velocityComponent.velocityX
-		entity.position.y += entity.velocityComponent.velocityY
+		var faktor float64
+		if w.zeitUpgradeRemainingTime > 0 {
+			faktor = w.zeitUpgradeFaktor
+		} else {
+			faktor = 1
+		}
+
+		entity.position.x += entity.velocityComponent.velocityX * faktor
+		entity.position.y += entity.velocityComponent.velocityY * faktor
 	}
 }

@@ -102,9 +102,13 @@ Königsblau: Deine Plattform wird zu einer Kanone, deren Kugeln Steine zerstöre
 Dunkelorange: Das Spielfeld wird zu einem Regenbogen
 Gelb: Deine Plattform kann schneller bewegt werden
 Hellgrün: Du kannst entspannen, während deine Plattform automatisch Kugeln wegschießt und Upgrades sammelt
+Weiß: In diesem Upgrade kann alles drinstecken
+Lila: Die Zeit wird kurz beschleunigt
+Pink: Das Spiel läuft in Zeitlupe
+Hellblau: Die Upgradesteine werden zufällig neu belegt und es kommen ein paar neue dazu
 
 Alle Upgrades sind zeitlich begrenzt.
-Die Dauer und Intensität der Upgrades ist zufällig.`,
+Die Dauer und Intensität der Upgrades sind zufällig.`,
 		ContinueText: "Alles verstanden! Zurück zum Hauptmenü",
 		ContinueAction: func() herderlegacy.Screen {
 			return NewFreierModusScreen(herderLegacy, breakoutBeendenCallback)

@@ -11,6 +11,9 @@ func newRandomUpgrade() upgrade {
 		newRandomRainbowUpgrade,
 		newRandomFasterInputUpgrade,
 		newRandomAutomaticInputUpgrade,
+		newRandomHiddenUpgrade,
+		newRandomZeitUpgrade,
+		newRandomUpgradeShuffleUpgrade,
 	}
 	creator := possibleUpgradeCreators[rand.Intn(len(possibleUpgradeCreators))]
 	return creator()

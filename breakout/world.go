@@ -81,6 +81,9 @@ type world struct {
 	fasterInputUpgradeMultiplier    float64
 
 	automaticInputUpgradeRemainingTime int
+
+	zeitUpgradeRemainingTime int
+	zeitUpgradeFaktor        float64
 }
 
 func (w *world) update() {
@@ -95,6 +98,7 @@ func (w *world) update() {
 	w.tickFasterInputUpgradeTimer()
 	w.performAutomaticInput()
 	w.amRandAbprallen()
+	w.tickZeitUpgrade()
 }
 
 func (w *world) draw(screen *ebiten.Image) {
