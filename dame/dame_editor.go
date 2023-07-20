@@ -119,7 +119,6 @@ type brettEditorScreen struct {
 	feldAuswahl *ui.Selection[feld]
 
 	brett Brett
-	feld  feld
 }
 
 func newBrettEditorScreen(
@@ -128,8 +127,20 @@ func newBrettEditorScreen(
 	nächsterScreen func(brett Brett) herderlegacy.Screen,
 ) *brettEditorScreen {
 	screen := brettEditorScreen{
+		feldAuswahl: ui.NewSelection(herderLegacy, ui.SelectionConfig[feld]{
+			Position: ui.Position{
+				X:                ui.Width - 20,
+				Y:                20,
+				AnchorHorizontal: ui.HorizontalerAnchorRechts,
+				AnchorVertikal:   ui.VertikalerAnchorOben,
+			},
+			Text:     "Setzen",
+			Value:    feldLeer,
+			Values:   []feld{feldLeer, feldSteinSchüler, feldDameSchüler, feldSteinLehrer, feldDameLehrer},
+			ToString: feld.anzeigeName,
+		}),
+
 		brett: brett,
-		feld:  feldLeer,
 	}
 
 	screen.zurückKnopf = ui.NewButton(ui.ButtonConfig{
@@ -170,22 +181,6 @@ func newBrettEditorScreen(
 		},
 	})
 
-	screen.feldAuswahl = ui.NewSelection(herderLegacy, ui.SelectionConfig[feld]{
-		Position: ui.Position{
-			X:                ui.Width - 20,
-			Y:                20,
-			AnchorHorizontal: ui.HorizontalerAnchorRechts,
-			AnchorVertikal:   ui.VertikalerAnchorOben,
-		},
-		Text:     "Setzen",
-		Value:    feldLeer,
-		Values:   []feld{feldLeer, feldSteinSchüler, feldDameSchüler, feldSteinLehrer, feldDameLehrer},
-		ToString: feld.anzeigeName,
-		Callback: func(f feld) {
-			screen.feld = f
-		},
-	})
-
 	return &screen
 }
 
@@ -202,7 +197,7 @@ func (b *brettEditorScreen) handleClick(clickX, clickY int) {
 		return
 	}
 
-	b.brett.setFeld(clickedPosition, b.feld)
+	b.brett.setFeld(clickedPosition, b.feldAuswahl.Value())
 }
 
 func (b *brettEditorScreen) components() []ui.Component {

@@ -1,5 +1,7 @@
 package dame
 
+import "fmt"
+
 type position struct {
 	zeile  int
 	spalte int
@@ -18,4 +20,8 @@ func (p position) schwarz() bool {
 
 func (p position) valid(zeilen, spalten int) bool {
 	return p.zeile >= 0 && p.spalte >= 0 && p.zeile < zeilen && p.spalte < spalten
+}
+
+func (p position) String() string {
+	return fmt.Sprintf("(%v, %v)", p.zeile, p.spalte)
 }

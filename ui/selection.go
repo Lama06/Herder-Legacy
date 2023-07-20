@@ -34,39 +34,47 @@ type Selection[T any] struct {
 func NewSelection[T any](herderLegacy herderlegacy.HerderLegacy, config SelectionConfig[T]) *Selection[T] {
 	selection := Selection[T]{
 		config: config,
-		button: NewButton(ButtonConfig{
-			Position: config.Position,
-		}),
 	}
 
-	selection.button.SetCallback(func() {
-		previousScreen := herderLegacy.CurrentScreen()
+	selection.button = NewButton(ButtonConfig{
+		Position: config.Position,
+		Callback: func() {
+			previousScreen := herderLegacy.CurrentScreen()
 
-		widgets := make([]ListScreenWidget, len(config.Values))
-		for i, möglichkeit := range config.Values {
-			möglichkeit := möglichkeit
-			widgets[i] = ListScreenButtonWidget{
-				Text: config.toStringOrDefault()(möglichkeit),
-				Callback: func() {
-					selection.SetValue(möglichkeit)
-					herderLegacy.OpenScreen(previousScreen)
-				},
+			widgets := make([]ListScreenWidget, len(config.Values))
+			for i, möglichkeit := range config.Values {
+				möglichkeit := möglichkeit
+				widgets[i] = ListScreenButtonWidget{
+					Text: config.toStringOrDefault()(möglichkeit),
+					Callback: func() {
+						selection.SetValue(möglichkeit)
+						herderLegacy.OpenScreen(previousScreen)
+					},
+				}
 			}
-		}
 
-		herderLegacy.OpenScreen(NewListScreen(herderLegacy, ListScreenConfig{
-			Title: config.Text,
-			CancelAction: func() herderlegacy.Screen {
-				return previousScreen
-			},
+			herderLegacy.OpenScreen(NewListScreen(herderLegacy, ListScreenConfig{
+				Title: config.Text,
+				CancelAction: func() herderlegacy.Screen {
+					return previousScreen
+				},
 
-			Widgets: widgets,
-		}))
+				Widgets: widgets,
+			}))
+		},
 	})
 
 	selection.SetValue(config.Value)
 
 	return &selection
+}
+
+func (s *Selection[T]) Position() Position {
+	return s.button.Position()
+}
+
+func (s *Selection[T]) SetPosition(position Position) {
+	s.button.SetPosition(position)
 }
 
 func (s *Selection[T]) Value() T {

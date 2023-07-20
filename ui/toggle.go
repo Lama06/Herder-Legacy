@@ -21,16 +21,16 @@ type Toggle struct {
 func NewToggle(config ToggleConfig) *Toggle {
 	toggle := Toggle{
 		config: config,
-		button: NewButton(ButtonConfig{
-			Position: config.Position,
-		}),
 	}
 
-	toggle.SetEnabled(config.Enabled)
-
-	toggle.button.SetCallback(func() {
-		toggle.SetEnabled(!toggle.enabled)
+	toggle.button = NewButton(ButtonConfig{
+		Position: config.Position,
+		Callback: func() {
+			toggle.SetEnabled(!toggle.enabled)
+		},
 	})
+
+	toggle.SetEnabled(config.Enabled)
 
 	return &toggle
 }

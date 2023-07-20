@@ -38,10 +38,11 @@ func (z zugSchritt) String() string {
 	return fmt.Sprintf(`{
 von: %v
 zu: %v
+hatGeschlagenePosition: %v
 geschlagenePosition: %v
 ergebnis: 
 %v
-}`, z.von, z.zu, z.geschlagenePosition, z.ergebnis)
+}`, z.von, z.zu, z.hatGeschlagenePosition, z.geschlagenePosition, z.ergebnis)
 }
 
 type zug []zugSchritt
