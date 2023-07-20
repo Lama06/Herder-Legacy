@@ -8,6 +8,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/passwortdreher"
+	"github.com/Lama06/Herder-Legacy/quiz"
 	"github.com/Lama06/Herder-Legacy/stabwelle"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -92,13 +93,22 @@ func main() {
 					3,
 				)
 			}),
-			dialog.NewAntwort("Stabwellen (dummer Name ich weiß)", func() herderlegacy.Screen {
+			dialog.NewAntwort("Stabwellen", func() herderlegacy.Screen {
 				return stabwelle.NewStabwelleScreen(
 					&herderLegacy,
 					func(erfolg bool) herderlegacy.Screen {
 						return newMenuScreen()
 					},
 					3,
+				)
+			}),
+			dialog.NewAntwort("Hauptstadt Quiz", func() herderlegacy.Screen {
+				return quiz.NewQuizScreen(
+					&herderLegacy,
+					quiz.NewHauptstädteEuropasQuizConfig(10*60),
+					func(qa quiz.QuizAuswertung) herderlegacy.Screen {
+						return newMenuScreen()
+					},
 				)
 			}),
 			dialog.NewAntwort("Dame", func() herderlegacy.Screen {
