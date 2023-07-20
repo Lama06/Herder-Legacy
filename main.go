@@ -71,6 +71,7 @@ func main() {
 
 	ui.Init(&herderLegacy)
 	breakout.Init(&herderLegacy)
+	quiz.Init(&herderLegacy)
 
 	var newMenuScreen func() herderlegacy.Screen
 	newMenuScreen = func() herderlegacy.Screen {
@@ -103,12 +104,9 @@ func main() {
 				)
 			}),
 			dialog.NewAntwort("Hauptstadt Quiz", func() herderlegacy.Screen {
-				return quiz.NewQuizScreen(
+				return quiz.NewFreierModusScreen(
 					&herderLegacy,
-					quiz.NewHauptstädteEuropasQuizConfig(10*60),
-					func(qa quiz.QuizAuswertung) herderlegacy.Screen {
-						return newMenuScreen()
-					},
+					newMenuScreen,
 				)
 			}),
 			dialog.NewAntwort("Dame", func() herderlegacy.Screen {

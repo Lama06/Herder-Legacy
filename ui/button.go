@@ -145,6 +145,7 @@ type ButtonConfig struct {
 	Text               string
 	CustomColorPalette bool
 	ColorPalette       ButtonColorPalette
+	Silent             bool
 	Callback           func()
 	Disabled           bool
 }
@@ -153,6 +154,7 @@ type Button struct {
 	position     Position
 	text         string
 	colorPalette ButtonColorPalette
+	silent       bool
 	callback     func()
 	disabled     bool
 
@@ -176,6 +178,7 @@ func NewButton(config ButtonConfig) *Button {
 		position:     config.Position,
 		text:         config.Text,
 		colorPalette: colorPalette,
+		silent:       config.Silent,
 		callback:     config.Callback,
 		disabled:     config.Disabled,
 
@@ -267,8 +270,10 @@ func (b *Button) Update() {
 	buttonWidth, buttonHeight := b.buttonSize()
 
 	if b.position.isClicked(float64(buttonWidth), float64(buttonHeight)) && !b.disabled {
-		buttonClickSound.Rewind()
-		buttonClickSound.Play()
+		if !b.silent {
+			buttonClickSound.Rewind()
+			buttonClickSound.Play()
+		}
 
 		if b.callback != nil {
 			b.callback()
