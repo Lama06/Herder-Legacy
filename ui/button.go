@@ -1,10 +1,15 @@
 package ui
 
 import (
+	"bytes"
+	_ "embed"
 	"image/color"
 	"strings"
 
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"golang.org/x/image/colornames"
 )
@@ -16,6 +21,24 @@ const (
 	buttonScaleHovered          = 1.2
 	buttonScaleMaxChangePerTick = 0.03
 )
+
+var (
+	//go:embed button.mp3
+	buttonClickSoundData []byte
+	buttonClickSound     *audio.Player
+)
+
+func initButtonClickSound(herderLegacy herderlegacy.HerderLegacy) {
+	context := herderLegacy.AudioContext()
+	stream, err := mp3.DecodeWithSampleRate(context.SampleRate(), bytes.NewReader(buttonClickSoundData))
+	if err != nil {
+		panic(err)
+	}
+	buttonClickSound, err = context.NewPlayer(stream)
+	if err != nil {
+		panic(err)
+	}
+}
 
 type ButtonColorPalette struct {
 	BackgroundColor        color.Color
@@ -243,8 +266,13 @@ func (b *Button) SetDisabled(disabled bool) {
 func (b *Button) Update() {
 	buttonWidth, buttonHeight := b.buttonSize()
 
-	if b.position.isClicked(float64(buttonWidth), float64(buttonHeight)) && b.callback != nil && !b.disabled {
-		b.callback()
+	if b.position.isClicked(float64(buttonWidth), float64(buttonHeight)) && !b.disabled {
+		buttonClickSound.Rewind()
+		buttonClickSound.Play()
+
+		if b.callback != nil {
+			b.callback()
+		}
 	}
 
 	b.hovered = b.position.isHovered(float64(buttonWidth), float64(buttonHeight))

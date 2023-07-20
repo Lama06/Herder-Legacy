@@ -11,10 +11,12 @@ import (
 	"github.com/Lama06/Herder-Legacy/stabwelle"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type herderLegacy struct {
+	audioContext       *audio.Context
 	currentScreen      herderlegacy.Screen
 	verhinderteStunden float64
 }
@@ -29,6 +31,10 @@ func (h *herderLegacy) VerhinderteStunden() float64 {
 
 func (h *herderLegacy) AddVerhinderteStunden(stunden float64) {
 	h.verhinderteStunden += stunden
+}
+
+func (h *herderLegacy) AudioContext() *audio.Context {
+	return h.audioContext
 }
 
 func (h *herderLegacy) CurrentScreen() herderlegacy.Screen {
@@ -58,7 +64,12 @@ func (h *herderLegacy) Layout(outsideWidth, outsideHeight int) (screenWidth, scr
 func main() {
 	ebiten.SetWindowTitle("Herder Legacy")
 	ebiten.SetFullscreen(true)
-	herderLegacy := herderLegacy{}
+	herderLegacy := herderLegacy{
+		audioContext: audio.NewContext(44100),
+	}
+
+	ui.Init(&herderLegacy)
+	breakout.Init(&herderLegacy)
 
 	var newMenuScreen func() herderlegacy.Screen
 	newMenuScreen = func() herderlegacy.Screen {

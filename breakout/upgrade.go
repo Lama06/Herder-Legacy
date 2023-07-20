@@ -87,6 +87,7 @@ func (w *world) fallendeUpgradesAufsammeln() {
 
 			delete(w.entities, fallendesUpgrade)
 			fallendesUpgrade.fallendesUpgradeComponent.upgrade.collect(w, plattform)
+			upgradeSound.Play()
 		}
 	}
 }

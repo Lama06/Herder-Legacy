@@ -48,6 +48,10 @@ func (w *world) amRandAbprallen() {
 
 		if entity.amRandAbprallenComponent.oben && hitbox.Y < 0 {
 			entity.position.y = 0
+			if entity.istBall {
+				wandSound.Rewind()
+				wandSound.Play()
+			}
 			if entity.hatVelocityComponent {
 				entity.velocityComponent.velocityY *= -1
 			}
@@ -55,6 +59,10 @@ func (w *world) amRandAbprallen() {
 
 		if entity.amRandAbprallenComponent.links && hitbox.X < 0 {
 			entity.position.x = 0
+			if entity.istBall {
+				wandSound.Rewind()
+				wandSound.Play()
+			}
 			if entity.hatVelocityComponent {
 				entity.velocityComponent.velocityX *= -1
 			}
@@ -62,6 +70,10 @@ func (w *world) amRandAbprallen() {
 
 		if entity.amRandAbprallenComponent.unten && hitbox.Y+hitbox.Height > ui.Height {
 			entity.position.y = ui.Height - hitbox.Height
+			if entity.istBall {
+				wandSound.Rewind()
+				wandSound.Play()
+			}
 			if entity.hatVelocityComponent {
 				entity.velocityComponent.velocityY *= -1
 			}
@@ -69,6 +81,10 @@ func (w *world) amRandAbprallen() {
 
 		if entity.amRandAbprallenComponent.rechts && hitbox.X+hitbox.Width > ui.Width {
 			entity.position.x = ui.Width - hitbox.Width
+			if entity.istBall {
+				wandSound.Rewind()
+				wandSound.Play()
+			}
 			if entity.hatVelocityComponent {
 				entity.velocityComponent.velocityX *= -1
 			}
@@ -129,6 +145,13 @@ func (w *world) anHitboxenAbprallen() {
 				delete(w.entities, secondEntity)
 				fallendesUpgradeSpawnen(w, secondEntity)
 				w.konfetti.SpawnKonfetti(secondHitbox.CenterX(), secondHitbox.CenterY())
+				steinSound.Rewind()
+				steinSound.Play()
+			}
+
+			if secondEntity.hatPlattformComponent && firstEntity.istBall {
+				plattformSound.Rewind()
+				plattformSound.Play()
 			}
 
 			switch {

@@ -1,6 +1,9 @@
 package herderlegacy
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+)
 
 type HerderLegacy interface {
 	SpielerName() string
@@ -8,6 +11,8 @@ type HerderLegacy interface {
 	VerhinderteStunden() float64
 
 	AddVerhinderteStunden(stunden float64)
+
+	AudioContext() *audio.Context
 
 	CurrentScreen() Screen
 
