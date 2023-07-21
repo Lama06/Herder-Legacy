@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"golang.org/x/image/colornames"
 )
 
 var (
@@ -98,7 +96,7 @@ type relationsQuizFrageScreen struct {
 	verbleibendeZeit int
 
 	aufgebenKnopf *ui.Button
-	countdown     *ui.Title
+	countdown     *ui.Countdown
 	statistik     *ui.Text
 	frage         *ui.Title
 
@@ -150,14 +148,6 @@ func newRelationsQuizFrageScreen(
 				herderLegacy.OpenScreen(quizBeendetCallback(auswertung))
 			},
 		}),
-		countdown: ui.NewTitle(ui.TitleConfig{
-			Position: ui.Position{
-				X:                ui.Width / 2,
-				Y:                20,
-				AnchorHorizontal: ui.HorizontalerAnchorMitte,
-				AnchorVertikal:   ui.VertikalerAnchorOben,
-			},
-		}),
 		statistik: ui.NewText(ui.TextConfig{
 			Position: ui.Position{
 				X:                ui.Width - 20,
@@ -177,6 +167,23 @@ func newRelationsQuizFrageScreen(
 			Text:     config.Frage,
 		}),
 	}
+
+	screen.countdown = ui.NewCountdown(ui.CountdownConfig{
+		Position: ui.Position{
+			X:                ui.Width / 2,
+			Y:                20,
+			AnchorHorizontal: ui.HorizontalerAnchorMitte,
+			AnchorVertikal:   ui.VertikalerAnchorOben,
+		},
+		StartZeit: config.ZeitProFrage,
+		AbgelaufenCallback: func() {
+			if config.Werte[letzterGewinner] > config.Werte[vergleich] {
+				screen.vergleichsButton.Callback()()
+			} else {
+				screen.letzterGewinnerButton.Callback()()
+			}
+		},
+	})
 
 	if hatLetztenVerlierer {
 		screen.letzterVerlierenButton = ui.NewButton(ui.ButtonConfig{
@@ -292,29 +299,6 @@ func (r *relationsQuizFrageScreen) Draw(screen *ebiten.Image) {
 func (r *relationsQuizFrageScreen) Update() {
 	for _, component := range r.components() {
 		component.Update()
-	}
-
-	if r.verbleibendeZeit <= 0 {
-		if r.config.Werte[r.letzterGewinner] > r.config.Werte[r.vergleich] {
-			r.vergleichsButton.Callback()()
-		} else {
-			r.letzterGewinnerButton.Callback()()
-		}
-		return
-	}
-	r.verbleibendeZeit--
-
-	r.countdown.SetText(strconv.Itoa(r.verbleibendeZeit/60 + 1))
-	if r.verbleibendeZeit > 3*60 {
-		r.countdown.SetColorPalette(ui.TitleColorPalette{
-			Color:      colornames.Green,
-			HoverColor: colornames.Darkgreen,
-		})
-	} else {
-		r.countdown.SetColorPalette(ui.TitleColorPalette{
-			Color:      colornames.Red,
-			HoverColor: colornames.Darkred,
-		})
 	}
 
 	switch {

@@ -3,13 +3,11 @@ package quiz
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"golang.org/x/image/colornames"
 )
 
 const multipleChoiceQuizAnzahlAntworten = 4
@@ -71,7 +69,7 @@ type multipleChoiceFrageScreen struct {
 	verbleibendeZeit int
 
 	aufgebenKnopf *ui.Button
-	countdown     *ui.Title
+	countdown     *ui.Countdown
 	statistik     *ui.Text
 	frage         *ui.Title
 	antwortKnöpfe []*ui.Button
@@ -111,12 +109,30 @@ func newMultipleChoiceFrageScreen(
 				herderLegacy.OpenScreen(quizBeendetCallback(auswertung))
 			},
 		}),
-		countdown: ui.NewTitle(ui.TitleConfig{
+		countdown: ui.NewCountdown(ui.CountdownConfig{
 			Position: ui.Position{
 				X:                ui.Width / 2,
 				Y:                20,
 				AnchorHorizontal: ui.HorizontalerAnchorMitte,
 				AnchorVertikal:   ui.VertikalerAnchorOben,
+			},
+			StartZeit: config.ZeitProFrage,
+			AbgelaufenCallback: func() {
+				auswertung.FalscheAntworten++
+
+				if len(verbleibendeFragen) == 0 {
+					herderLegacy.OpenScreen(quizBeendetCallback(auswertung))
+					return
+				}
+
+				herderLegacy.OpenScreen(newMultipleChoiceFrageScreen(
+					herderLegacy,
+					config,
+					verbleibendeFragen[0],
+					verbleibendeFragen[1:],
+					auswertung,
+					quizBeendetCallback,
+				))
 			},
 		}),
 		statistik: ui.NewText(ui.TextConfig{
@@ -224,39 +240,6 @@ func (f *multipleChoiceFrageScreen) components() []ui.Component {
 }
 
 func (f *multipleChoiceFrageScreen) Update() {
-	if f.verbleibendeZeit <= 0 {
-		f.auswertung.FalscheAntworten++
-
-		if len(f.verbleibendeFragen) == 0 {
-			f.herderLegacy.OpenScreen(f.quizBeendetCallback(f.auswertung))
-			return
-		}
-
-		f.herderLegacy.OpenScreen(newMultipleChoiceFrageScreen(
-			f.herderLegacy,
-			f.config,
-			f.verbleibendeFragen[0],
-			f.verbleibendeFragen[1:],
-			f.auswertung,
-			f.quizBeendetCallback,
-		))
-		return
-	}
-	f.verbleibendeZeit--
-
-	f.countdown.SetText(strconv.Itoa(f.verbleibendeZeit/60 + 1))
-	if f.verbleibendeZeit > 3*60 {
-		f.countdown.SetColorPalette(ui.TitleColorPalette{
-			Color:      colornames.Green,
-			HoverColor: colornames.Darkgreen,
-		})
-	} else {
-		f.countdown.SetColorPalette(ui.TitleColorPalette{
-			Color:      colornames.Red,
-			HoverColor: colornames.Darkred,
-		})
-	}
-
 	for i, antwortKnopf := range f.antwortKnöpfe {
 		if inpututil.IsKeyJustPressed(ebiten.Key1 + ebiten.Key(i)) {
 			antwortKnopf.Callback()()
