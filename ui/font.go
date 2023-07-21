@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	//go:embed roboto.ttf
+	//go:embed assets/roboto.ttf
 	fontData       []byte
 	normalFontFace font.Face
 	titleFontFace  font.Face

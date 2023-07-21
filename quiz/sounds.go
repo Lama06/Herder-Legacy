@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	//go:embed sounds/richtig.mp3
+	//go:embed assets/richtig.mp3
 	richtigSoundData []byte
-	//go:embed sounds/falsch.mp3
+	//go:embed assets/falsch.mp3
 	falschSoundData []byte
 
 	richtigSound *audio.Player

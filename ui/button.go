@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	//go:embed button.mp3
+	//go:embed assets/button.mp3
 	buttonClickSoundData []byte
 	buttonClickSound     *audio.Player
 )

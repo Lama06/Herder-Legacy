@@ -10,13 +10,13 @@ import (
 )
 
 var (
-	//go:embed sounds/stein.mp3
+	//go:embed assets/stein.mp3
 	steinSoundData []byte
-	//go:embed sounds/plattform.mp3
+	//go:embed assets/plattform.mp3
 	plattformSoundData []byte
-	//go:embed sounds/upgrade.mp3
+	//go:embed assets/upgrade.mp3
 	upgradeSoundData []byte
-	//go:embed sounds/wand.mp3
+	//go:embed assets/wand.mp3
 	wandSoundData []byte
 
 	steinSound     *audio.Player
