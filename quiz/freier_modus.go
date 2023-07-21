@@ -59,10 +59,24 @@ func NewFreierModusScreen(
 					))
 				},
 			},
+			ui.ListScreenButtonWidget{
+				Text: "Einwohnerzahlen",
+				Callback: func() {
+					thisScreen := herderLegacy.CurrentScreen()
+
+					herderLegacy.OpenScreen(NewRelationsQuizScreen(
+						herderLegacy,
+						NewEinwohnerQuizConfig(int(sekundenProFrage*60)),
+						func(auswertung RelationQuizAuswertung) herderlegacy.Screen {
+							return thisScreen
+						},
+					))
+				},
+			},
 			ui.ListScreenSelectionWidget[float64]{
 				Text:   "Antwortzeit pro Frage",
 				Value:  sekundenProFrage,
-				Values: []float64{1, 1.5, 2, 2.5, 3, 4, 6, 8, 10},
+				Values: []float64{1, 1.5, 2, 2.5, 3, 4, 6, 8, 10, 15, 20},
 				Callback: func(neueAntwortzeit float64) {
 					sekundenProFrage = neueAntwortzeit
 				},
