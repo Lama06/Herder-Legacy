@@ -83,7 +83,7 @@ func TestKollisionenVerhindern(t *testing.T) {
 					hatRigidbody: true,
 
 					expectedX: -10,
-					expectedY: -3,
+					expectedY: -2.5,
 				},
 				{
 					x: -100,
@@ -100,7 +100,7 @@ func TestKollisionenVerhindern(t *testing.T) {
 					hatRigidbody: true,
 
 					expectedX: -110,
-					expectedY: 103,
+					expectedY: 102.5,
 				},
 			},
 		},

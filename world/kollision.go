@@ -1,9 +1,6 @@
 package world
 
-import (
-	"math"
-	"sort"
-)
+import "math"
 
 type HitboxComponent struct {
 	Width, Height float64
@@ -42,120 +39,112 @@ func (w *World) rendererHitboxenAnwenden() {
 	}
 }
 
-type kollisionsReaktion struct {
-	xVerschiebung, yVerschiebung         float64
-	xVelocityAnpassen, yVelocityAnpassen bool
-	xVelocityRichtung, yVelocityRichtung float64
-}
+func handleKollision(entity1, entity2 *Entity) {
+	aabb1 := entity1.aabb()
+	aabb2 := entity2.aabb()
 
-func (k kollisionsReaktion) apply(entity *Entity) {
-	entity.Position.X += k.xVerschiebung
-	entity.Position.Y += k.yVerschiebung
+	horizontalAusweichenDistanz := math.Min(math.Abs(aabb1.X-aabb2.MaxX()), math.Abs(aabb1.MaxX()-aabb2.X))
+	vertikalAusweichenDistanz := math.Min(math.Abs(aabb1.Y-aabb2.MaxY()), math.Abs(aabb1.MaxY()-aabb2.Y))
 
-	if entity.HatVelocityComponent {
-		if k.xVelocityAnpassen {
-			entity.VelocityComponent.VelocityX = k.xVelocityRichtung * math.Abs(entity.VelocityComponent.VelocityX)
+	if horizontalAusweichenDistanz < vertikalAusweichenDistanz {
+		if aabb1.X < aabb2.X {
+			switch {
+			case entity1.HatRigidbodyComponent && entity2.HatRigidbodyComponent:
+				entity1.Position.X -= horizontalAusweichenDistanz / 2
+				entity2.Position.X += horizontalAusweichenDistanz / 2
+			case entity1.HatRigidbodyComponent:
+				entity1.Position.X -= horizontalAusweichenDistanz
+			case entity2.HatRigidbodyComponent:
+				entity2.Position.X += horizontalAusweichenDistanz
+			}
+			if entity1.HatRigidbodyComponent && entity1.HatVelocityComponent {
+				entity1.VelocityComponent.VelocityX = -math.Abs(entity1.VelocityComponent.VelocityX)
+			}
+			if entity2.HatRigidbodyComponent && entity2.HatVelocityComponent {
+				entity2.VelocityComponent.VelocityX = math.Abs(entity2.VelocityComponent.VelocityX)
+			}
+		} else {
+			switch {
+			case entity1.HatRigidbodyComponent && entity2.HatRigidbodyComponent:
+				entity2.Position.X -= horizontalAusweichenDistanz / 2
+				entity1.Position.X += horizontalAusweichenDistanz / 2
+			case entity1.HatRigidbodyComponent:
+				entity1.Position.X += horizontalAusweichenDistanz
+			case entity2.HatRigidbodyComponent:
+				entity2.Position.X -= horizontalAusweichenDistanz
+			}
+			if entity1.HatRigidbodyComponent && entity1.HatVelocityComponent {
+				entity1.VelocityComponent.VelocityX = math.Abs(entity1.VelocityComponent.VelocityX)
+			}
+			if entity2.HatRigidbodyComponent && entity2.HatVelocityComponent {
+				entity2.VelocityComponent.VelocityX = -math.Abs(entity2.VelocityComponent.VelocityX)
+			}
 		}
-		if k.yVelocityAnpassen {
-			entity.VelocityComponent.VelocityY = k.yVelocityRichtung * math.Abs(entity.VelocityComponent.VelocityY)
+	} else {
+		if aabb1.Y < aabb2.Y {
+			switch {
+			case entity1.HatRigidbodyComponent && entity2.HatRigidbodyComponent:
+				entity1.Position.Y -= vertikalAusweichenDistanz / 2
+				entity2.Position.Y += vertikalAusweichenDistanz / 2
+			case entity1.HatRigidbodyComponent:
+				entity1.Position.Y -= vertikalAusweichenDistanz
+			case entity2.HatRigidbodyComponent:
+				entity2.Position.Y += vertikalAusweichenDistanz
+			}
+			if entity1.HatRigidbodyComponent && entity1.HatVelocityComponent {
+				entity1.VelocityComponent.VelocityY = -math.Abs(entity1.VelocityComponent.VelocityY)
+			}
+			if entity2.HatRigidbodyComponent && entity2.HatVelocityComponent {
+				entity2.VelocityComponent.VelocityY = math.Abs(entity2.VelocityComponent.VelocityY)
+			}
+		} else {
+			switch {
+			case entity1.HatRigidbodyComponent && entity2.HatRigidbodyComponent:
+				entity2.Position.Y -= vertikalAusweichenDistanz / 2
+				entity1.Position.Y += vertikalAusweichenDistanz / 2
+			case entity1.HatRigidbodyComponent:
+				entity1.Position.Y += vertikalAusweichenDistanz
+			case entity2.HatRigidbodyComponent:
+				entity2.Position.Y -= vertikalAusweichenDistanz
+			}
+			if entity1.HatRigidbodyComponent && entity1.HatVelocityComponent {
+				entity1.VelocityComponent.VelocityY = math.Abs(entity1.VelocityComponent.VelocityY)
+			}
+			if entity2.HatRigidbodyComponent && entity2.HatVelocityComponent {
+				entity2.VelocityComponent.VelocityY = -math.Abs(entity2.VelocityComponent.VelocityY)
+			}
 		}
 	}
-}
-
-func getKollisionReaktion(entity, hindernis *Entity) kollisionsReaktion {
-	entityAabb := entity.aabb()
-	hindernisAabb := hindernis.aabb()
-
-	möglicheReaktionen := make([]kollisionsReaktion, 0, 4)
-
-	nachUntenAusweichenNeuesY := hindernisAabb.MaxY()
-	nachUntenAusweichenVerschiebung := nachUntenAusweichenNeuesY - entityAabb.Y
-	möglicheReaktionen = append(möglicheReaktionen, kollisionsReaktion{
-		xVerschiebung:     0,
-		yVerschiebung:     nachUntenAusweichenVerschiebung,
-		xVelocityAnpassen: false,
-		yVelocityAnpassen: true,
-		yVelocityRichtung: 1,
-	})
-
-	nachObenAusweichenNeuesY := hindernisAabb.Y - entityAabb.Height
-	nachObenAusweichenVerschiebung := nachObenAusweichenNeuesY - entityAabb.Y
-	möglicheReaktionen = append(möglicheReaktionen, kollisionsReaktion{
-		xVerschiebung:     0,
-		yVerschiebung:     nachObenAusweichenVerschiebung,
-		xVelocityAnpassen: false,
-		yVelocityAnpassen: true,
-		yVelocityRichtung: -1,
-	})
-
-	nachRechtsAusweichenNeuesX := hindernisAabb.MaxX()
-	nachRechtsAusweichenVerschiebung := nachRechtsAusweichenNeuesX - entityAabb.X
-	möglicheReaktionen = append(möglicheReaktionen, kollisionsReaktion{
-		xVerschiebung:     nachRechtsAusweichenVerschiebung,
-		yVerschiebung:     0,
-		xVelocityAnpassen: true,
-		xVelocityRichtung: 1,
-		yVelocityAnpassen: false,
-	})
-
-	nachLinksAusweichenNeuesX := hindernisAabb.X - entityAabb.Width
-	nachLinksAusweichenVerschiebung := nachLinksAusweichenNeuesX - entityAabb.X
-	möglicheReaktionen = append(möglicheReaktionen, kollisionsReaktion{
-		xVerschiebung:     nachLinksAusweichenVerschiebung,
-		yVerschiebung:     0,
-		xVelocityAnpassen: true,
-		xVelocityRichtung: -1,
-		yVelocityAnpassen: false,
-	})
-
-	sort.Slice(möglicheReaktionen, func(i int, j int) bool {
-		iVerschiebungGesamt := math.Abs(möglicheReaktionen[i].xVerschiebung) + math.Abs(möglicheReaktionen[i].yVerschiebung)
-		jVerschiebungGesamt := math.Abs(möglicheReaktionen[j].xVerschiebung) + math.Abs(möglicheReaktionen[j].yVerschiebung)
-		return iVerschiebungGesamt < jVerschiebungGesamt
-	})
-	reaktionMitKürzesterVerschiebung := möglicheReaktionen[0]
-
-	return reaktionMitKürzesterVerschiebung
 }
 
 func (w *World) kollisionenVerarbeiten() {
-	var reaktionen []func()
-
-	for entity := range w.Entites {
-		if !entity.HatRigidbodyComponent {
+	for entity1 := range w.Entites {
+		if !entity1.HatRigidbodyComponent || !entity1.HatHitboxComponent {
 			continue
 		}
 
-		entityAabb := entity.aabb()
+		aabb1 := entity1.aabb()
 
-		for hindernis := range w.Entites {
-			if entity == hindernis {
+		for entity2 := range w.Entites {
+			if entity1 == entity2 {
 				continue
 			}
 
-			if entity.Level != hindernis.Level {
+			if entity1.Level != entity2.Level {
 				continue
 			}
 
-			if !hindernis.HatHitboxComponent {
+			if !entity2.HatHitboxComponent {
 				continue
 			}
 
-			hindernisAabb := hindernis.aabb()
+			aabb2 := entity2.aabb()
 
-			if !entityAabb.KollidiertMit(hindernisAabb) {
+			if !aabb1.KollidiertMit(aabb2) {
 				continue
 			}
 
-			entity := entity
-			reaktion := getKollisionReaktion(entity, hindernis)
-			reaktionen = append(reaktionen, func() {
-				reaktion.apply(entity)
-			})
+			handleKollision(entity1, entity2)
 		}
-	}
-
-	for _, reaktion := range reaktionen {
-		reaktion()
 	}
 }
