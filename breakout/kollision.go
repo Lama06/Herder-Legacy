@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/Lama06/Herder-Legacy/aabb"
+	"github.com/Lama06/Herder-Legacy/assets"
 	"github.com/Lama06/Herder-Legacy/ui"
 )
 
@@ -39,6 +40,8 @@ func (e *entity) hitbox() aabb.Aabb {
 }
 
 func (w *world) amRandAbprallen() {
+	wandSound := assets.RequireSound("breakout/wand.mp3")
+
 	for entity := range w.entities {
 		if !entity.hatAmRandAbprallenComponent {
 			continue
@@ -145,11 +148,13 @@ func (w *world) anHitboxenAbprallen() {
 				delete(w.entities, secondEntity)
 				fallendesUpgradeSpawnen(w, secondEntity)
 				w.konfetti.SpawnKonfetti(secondHitbox.CenterX(), secondHitbox.CenterY())
+				steinSound := assets.RequireSound("breakout/stein.mp3")
 				steinSound.Rewind()
 				steinSound.Play()
 			}
 
 			if secondEntity.hatPlattformComponent && firstEntity.istBall {
+				plattformSound := assets.RequireSound("breakout/plattform.mp3")
 				plattformSound.Rewind()
 				plattformSound.Play()
 			}

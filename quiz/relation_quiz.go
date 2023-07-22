@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/Lama06/Herder-Legacy/assets"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -224,10 +225,12 @@ func (r *relationsQuizFrageScreen) handleSelect(
 
 	if gewonnen {
 		r.auswertung.RichtigeAntworten++
+		richtigSound := assets.RequireSound("ui/richtig.mp3")
 		richtigSound.Rewind()
 		richtigSound.Play()
 	} else {
 		r.auswertung.FalscheAntworten++
+		falschSound := assets.RequireSound("ui/falsch.mp3")
 		falschSound.Rewind()
 		falschSound.Play()
 	}

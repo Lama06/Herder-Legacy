@@ -1,15 +1,12 @@
 package ui
 
 import (
-	"bytes"
 	_ "embed"
 	"image/color"
 	"strings"
 
-	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/assets"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/audio"
-	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"golang.org/x/image/colornames"
 )
@@ -21,24 +18,6 @@ const (
 	buttonScaleHovered          = 1.2
 	buttonScaleMaxChangePerTick = 0.03
 )
-
-var (
-	//go:embed assets/button.mp3
-	buttonClickSoundData []byte
-	buttonClickSound     *audio.Player
-)
-
-func initButtonClickSound(herderLegacy herderlegacy.HerderLegacy) {
-	context := herderLegacy.AudioContext()
-	stream, err := mp3.DecodeWithSampleRate(context.SampleRate(), bytes.NewReader(buttonClickSoundData))
-	if err != nil {
-		panic(err)
-	}
-	buttonClickSound, err = context.NewPlayer(stream)
-	if err != nil {
-		panic(err)
-	}
-}
 
 type ButtonColorPalette struct {
 	BackgroundColor        color.Color
@@ -271,6 +250,7 @@ func (b *Button) Update() {
 
 	if b.position.isClicked(float64(buttonWidth), float64(buttonHeight)) && !b.disabled {
 		if !b.silent {
+			buttonClickSound := assets.RequireSound("ui/button.mp3")
 			buttonClickSound.Rewind()
 			buttonClickSound.Play()
 		}

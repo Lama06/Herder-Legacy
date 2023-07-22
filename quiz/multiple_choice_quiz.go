@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/Lama06/Herder-Legacy/assets"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -160,6 +161,7 @@ func newMultipleChoiceFrageScreen(
 			Text:   frage.Antwort,
 			Silent: true,
 			Callback: func() {
+				richtigSound := assets.RequireSound("ui/richtig.mp3")
 				richtigSound.Rewind()
 				richtigSound.Play()
 
@@ -197,6 +199,7 @@ func newMultipleChoiceFrageScreen(
 			Text:   möglicheFalscheAntworten[i],
 			Silent: true,
 			Callback: func() {
+				falschSound := assets.RequireSound("ui/falsch.mp3")
 				falschSound.Rewind()
 				falschSound.Play()
 

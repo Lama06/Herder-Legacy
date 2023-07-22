@@ -9,10 +9,6 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-func Init(herderLegacy herderlegacy.HerderLegacy) {
-	loadSounds(herderLegacy)
-}
-
 func NewFreierModusScreen(
 	herderLegacy herderlegacy.HerderLegacy,
 	breakoutBeendenCallback func() herderlegacy.Screen,

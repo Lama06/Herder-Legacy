@@ -72,10 +72,6 @@ func main() {
 		audioContext: audio.NewContext(44100),
 	}
 
-	ui.Init(&herderLegacy)
-	breakout.Init(&herderLegacy)
-	quiz.Init(&herderLegacy)
-
 	var newMenuScreen func() herderlegacy.Screen
 	newMenuScreen = func() herderlegacy.Screen {
 		return dialog.NewDialogScreen(

@@ -1,10 +1,13 @@
 package herder
 
-import "github.com/Lama06/Herder-Legacy/world"
+import (
+	"github.com/Lama06/Herder-Legacy/assets"
+	"github.com/Lama06/Herder-Legacy/world"
+)
 
 func CreateHerder() *world.World {
 	w := world.NewEmptyWorld()
-	bodenImg := requireImage("boden")
+	bodenImg := assets.RequireImage("boden.png")
 	for zeile := 0; zeile < 30; zeile++ {
 		for spalte := 0; spalte < 30; spalte++ {
 			w.SpawnEntity(&world.Entity{
@@ -37,7 +40,7 @@ func CreateHerder() *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image: requireImage("tisch"),
+			Image: assets.RequireImage("tisch.png"),
 			Scale: 1,
 		},
 		HatRendererHitboxComponent: true,
@@ -54,7 +57,7 @@ func CreateHerder() *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image: requireImage("tisch"),
+			Image: assets.RequireImage("tisch.png"),
 			Scale: 2,
 		},
 		HatRendererHitboxComponent: true,
@@ -71,7 +74,7 @@ func CreateHerder() *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image: requireImage("tisch"),
+			Image: assets.RequireImage("tisch.png"),
 			Scale: 1.798756,
 		},
 		HatRendererHitboxComponent: true,

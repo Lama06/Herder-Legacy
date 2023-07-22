@@ -4,19 +4,20 @@ import (
 	_ "embed"
 	"fmt"
 
+	"github.com/Lama06/Herder-Legacy/assets"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 )
 
 var (
-	//go:embed assets/roboto.ttf
-	fontData       []byte
 	normalFontFace font.Face
 	titleFontFace  font.Face
 )
 
 func init() {
 	const dpi = 72
+
+	fontData := assets.RequireFont("roboto.ttf")
 
 	robotoFont, err := opentype.Parse(fontData)
 	if err != nil {

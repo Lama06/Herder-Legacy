@@ -3,6 +3,8 @@ package breakout
 import (
 	"image/color"
 	"math/rand"
+
+	"github.com/Lama06/Herder-Legacy/assets"
 )
 
 func newRandomUpgrade() upgrade {
@@ -87,6 +89,8 @@ func (w *world) fallendeUpgradesAufsammeln() {
 
 			delete(w.entities, fallendesUpgrade)
 			fallendesUpgrade.fallendesUpgradeComponent.upgrade.collect(w, plattform)
+			upgradeSound := assets.RequireSound("breakout/upgrade.mp3")
+			upgradeSound.Rewind()
 			upgradeSound.Play()
 		}
 	}
