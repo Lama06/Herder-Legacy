@@ -1,12 +1,15 @@
 package main
 
 import (
+	_ "image/jpeg"
+	_ "image/png"
 	"runtime"
 
 	"github.com/Lama06/Herder-Legacy/breakout"
 	"github.com/Lama06/Herder-Legacy/dame"
 	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/openworld"
 	"github.com/Lama06/Herder-Legacy/passwortdreher"
 	"github.com/Lama06/Herder-Legacy/quiz"
 	"github.com/Lama06/Herder-Legacy/stabwelle"
@@ -79,6 +82,9 @@ func main() {
 			&herderLegacy,
 			"Herr Weber",
 			"Was willst du spielen",
+			dialog.NewAntwort("Openworld", func() herderlegacy.Screen {
+				return openworld.NewOpenWorldScreen()
+			}),
 			dialog.NewAntwort("Breakout", func() herderlegacy.Screen {
 				return breakout.NewFreierModusScreen(
 					&herderLegacy,

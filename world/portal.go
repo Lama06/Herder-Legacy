@@ -1,6 +1,9 @@
 package world
 
+import "github.com/Lama06/Herder-Legacy/aabb"
+
 type PortalComponent struct {
+	Width, Height       float64
 	DestinationLevel    Level
 	DestinationPosition Position
 }
@@ -11,7 +14,12 @@ func (w *World) teleportEntitiesTouchingPortal() {
 			continue
 		}
 
-		portalAabb := portal.aabb()
+		portalAabb := aabb.Aabb{
+			X:      portal.Position.X,
+			Y:      portal.Position.Y,
+			Width:  portal.PortalComponent.Width,
+			Height: portal.PortalComponent.Height,
+		}
 
 		for entity := range w.Entites {
 			if entity == portal {

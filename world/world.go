@@ -18,11 +18,14 @@ func (w *World) SpawnEntity(entity *Entity) *Entity {
 }
 
 func (w *World) Update() {
+	w.rendererHitboxenAnwenden()
 	w.applyVelocityToEntities()
+	w.entitiesMitKeyboardSteuern()
+	w.entitiesMitTouchSteuern()
 	w.teleportEntitiesTouchingPortal()
-	w.kollisionenVerhindern()
+	w.kollisionenVerarbeiten()
 }
 
 func (w *World) Draw(screen *ebiten.Image) {
-
+	w.drawEntities(screen)
 }

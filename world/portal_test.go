@@ -31,13 +31,10 @@ func TestPortalTeleportsEntity(t *testing.T) {
 			X: 15,
 			Y: 5,
 		},
-		HatHitboxComponent: true,
-		HitboxComponent: world.HitboxComponent{
-			Width:  1,
-			Height: 1,
-		},
 		HatPortalComponent: true,
 		PortalComponent: world.PortalComponent{
+			Width:            1,
+			Height:           1,
 			DestinationLevel: 1,
 			DestinationPosition: world.Position{
 				X: 10,

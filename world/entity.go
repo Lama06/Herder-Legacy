@@ -12,29 +12,45 @@ type Entity struct {
 	HatHitboxComponent bool
 	HitboxComponent    HitboxComponent
 
-	HatImageHitboxComponent bool
-	ImageHitboxComponent    ImageHitboxComponent
+	HatRendererHitboxComponent bool
+	RendererHitboxComponent    RendererHitboxComponent
 
-	HatKollisionenVerhindernComponent bool
-	KollisionenVerhindernComponent    KollisionenVerhindernComponent
+	HatRigidbodyComponent bool
+	RigidbodyComponent    RigidbodyComponent
 
 	HatPortalComponent bool
 	PortalComponent    PortalComponent
+
+	HatKeyboardMovementComponent bool
+	KeyboardMovementComponent    KeyboardMovementComponent
+
+	HatTouchInputComponent bool
+	TouchInputComponent    TouchInputComponent
+
+	HatCameraComponent bool
+	CameraComponent    CameraComponent
+
+	HatRenderComponent bool
+	RenderComponent    RenderComponent
+
+	HatRectRenderComponent bool
+	RectRenderComponent    RectRenderComponent
+
+	HatKreisRenderComponent bool
+	KreisRenderComponent    KreisRenderComponent
+
+	HatImageRenderComponent bool
+	ImageRenderComponent    ImageRenderComponent
 }
 
 func (e *Entity) aabb() aabb.Aabb {
-	if e.HatHitboxComponent {
-		return aabb.Aabb{
-			X:      e.Position.X,
-			Y:      e.Position.Y,
-			Width:  e.HitboxComponent.Width,
-			Height: e.HitboxComponent.Height,
-		}
+	if !e.HatHitboxComponent {
+		panic("missing hitbox")
 	}
 	return aabb.Aabb{
 		X:      e.Position.X,
 		Y:      e.Position.Y,
-		Width:  0,
-		Height: 0,
+		Width:  e.HitboxComponent.Width,
+		Height: e.HitboxComponent.Height,
 	}
 }

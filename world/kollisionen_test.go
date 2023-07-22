@@ -7,106 +7,143 @@ import (
 )
 
 func TestKollisionenVerhindern(t *testing.T) {
-	testCases := []struct {
-		entityX, entityY                 float64
-		entityWidth, entityHeight        float64
-		entityXVelocity, entityYVelocity float64
+	type entityConfig struct {
+		x, y float64
 
-		hindernisX, hindernisY                 float64
-		hindernisWidth, hindernisHeight        float64
-		hindernisXVelocity, hindernisYVelocity float64
+		hatHitbox     bool
+		width, height float64
 
+		hatVelocity          bool
+		xVelocity, yVelocity float64
+
+		hatRigidbody bool
+
+		expectedX, expectedY float64
+	}
+
+	testCases := map[string]struct {
 		ticks int
 
-		expectedEntityX, expectedEntityY float64
+		entities []entityConfig
 	}{
-		{
-			entityX:         -10,
-			entityY:         0,
-			entityWidth:     2,
-			entityHeight:    1,
-			entityXVelocity: 1,
-			entityYVelocity: 0,
-
-			hindernisX:         0,
-			hindernisY:         -20,
-			hindernisWidth:     5,
-			hindernisHeight:    40,
-			hindernisXVelocity: 0,
-			hindernisYVelocity: 0,
-
+		"Entity prallt von statischem Hindernis ab": {
 			ticks: 20,
 
-			expectedEntityX: -2,
-			expectedEntityY: 0,
+			entities: []entityConfig{
+				{
+					x: -10,
+					y: 0,
+
+					hatHitbox: true,
+					width:     2,
+					height:    1,
+
+					hatVelocity: true,
+					xVelocity:   1,
+					yVelocity:   0,
+
+					hatRigidbody: true,
+
+					expectedX: -13,
+					expectedY: 0,
+				},
+				{
+					x: 0,
+					y: -20,
+
+					hatHitbox: true,
+					width:     5,
+					height:    40,
+
+					hatVelocity: false,
+
+					hatRigidbody: false,
+
+					expectedX: 0,
+					expectedY: -20,
+				},
+			},
 		},
-		{
-			entityX:         0,
-			entityY:         0,
-			entityWidth:     3,
-			entityHeight:    3,
-			entityXVelocity: -0.1,
-			entityYVelocity: 1,
-
-			hindernisX:         -100,
-			hindernisY:         100,
-			hindernisWidth:     200,
-			hindernisHeight:    10,
-			hindernisXVelocity: -0.1,
-			hindernisYVelocity: -1,
-
+		"Sich aufeinander zubewegende Entities prallen von einander ab": {
 			ticks: 100,
 
-			expectedEntityX: -10,
-			expectedEntityY: -3,
+			entities: []entityConfig{
+				{
+					x: 0,
+					y: 0,
+
+					hatHitbox: true,
+					width:     3,
+					height:    3,
+
+					hatVelocity: true,
+					xVelocity:   -0.1,
+					yVelocity:   1,
+
+					hatRigidbody: true,
+
+					expectedX: -10,
+					expectedY: -3,
+				},
+				{
+					x: -100,
+					y: 100,
+
+					hatHitbox: true,
+					width:     200,
+					height:    10,
+
+					hatVelocity: true,
+					xVelocity:   -0.1,
+					yVelocity:   -1,
+
+					hatRigidbody: true,
+
+					expectedX: -110,
+					expectedY: 103,
+				},
+			},
 		},
 	}
 
-	for _, testCase := range testCases {
+	for name, testCase := range testCases {
 		w := world.NewEmptyWorld()
-		entity := w.SpawnEntity(&world.Entity{
-			Position: world.Position{
-				X: testCase.entityX,
-				Y: testCase.entityY,
-			},
-			HatHitboxComponent: true,
-			HitboxComponent: world.HitboxComponent{
-				Width:  testCase.entityWidth,
-				Height: testCase.entityHeight,
-			},
-			HatVelocityComponent: true,
-			VelocityComponent: world.VelocityComponent{
-				VelocityX: testCase.entityXVelocity,
-				VelocityY: testCase.entityYVelocity,
-			},
-			HatKollisionenVerhindernComponent: true,
-		})
-		w.SpawnEntity(&world.Entity{
-			Position: world.Position{
-				X: testCase.hindernisX,
-				Y: testCase.hindernisY,
-			},
-			HatHitboxComponent: true,
-			HitboxComponent: world.HitboxComponent{
-				Width:  testCase.hindernisWidth,
-				Height: testCase.hindernisHeight,
-			},
-			HatVelocityComponent: true,
-			VelocityComponent: world.VelocityComponent{
-				VelocityX: testCase.hindernisXVelocity,
-				VelocityY: testCase.hindernisYVelocity,
-			},
-		})
+
+		entities := make([]*world.Entity, len(testCase.entities))
+		for i, entityConfig := range testCase.entities {
+			entities[i] = w.SpawnEntity(&world.Entity{
+				Position: world.Position{
+					X: entityConfig.x,
+					Y: entityConfig.y,
+				},
+				HatVelocityComponent: entityConfig.hatVelocity,
+				VelocityComponent: world.VelocityComponent{
+					VelocityX: entityConfig.xVelocity,
+					VelocityY: entityConfig.yVelocity,
+				},
+				HatHitboxComponent: entityConfig.hatHitbox,
+				HitboxComponent: world.HitboxComponent{
+					Width:  entityConfig.width,
+					Height: entityConfig.height,
+				},
+				HatRigidbodyComponent: entityConfig.hatRigidbody,
+			})
+		}
 
 		for i := 0; i < testCase.ticks; i++ {
 			w.Update()
 		}
 
-		if !floatsRoughlyEqual(entity.Position.X, testCase.expectedEntityX) ||
-			!floatsRoughlyEqual(entity.Position.Y, testCase.expectedEntityY) {
-			t.Errorf("expected position: %v %v, got position: %v %v",
-				testCase.expectedEntityX, testCase.expectedEntityY,
-				entity.Position.X, entity.Position.Y)
+		for i, entity := range entities {
+			if !floatsRoughlyEqual(entity.Position.X, testCase.entities[i].expectedX) ||
+				!floatsRoughlyEqual(entity.Position.Y, testCase.entities[i].expectedY) {
+				t.Errorf(
+					"%v: expected position: %v %v, got position: %v %v",
+					name,
+					testCase.entities[i].expectedX, testCase.entities[i].expectedY,
+					entity.Position.X, entity.Position.Y,
+				)
+			}
 		}
 	}
 }
