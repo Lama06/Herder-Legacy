@@ -67,7 +67,7 @@ func (z zug) ergebnis() Brett {
 	return z[len(z)-1].ergebnis
 }
 
-func (z zug) Ergebnis() minimax.Brett {
+func (z zug) MinimaxErgebnis() minimax.Brett {
 	return z.ergebnis()
 }
 
@@ -418,7 +418,7 @@ func (b Brett) möglicheZügeMitStartPosition(startPosition position, regeln Zug
 	return möglicheZügeMitStartPosition
 }
 
-func (b Brett) MöglicheZüge(perspektive minimax.Spieler, aiRegeln minimax.Regeln) []minimax.Zug {
+func (b Brett) MinimaxMöglicheZüge(perspektive minimax.Spieler, aiRegeln minimax.Regeln) []minimax.Zug {
 	züge := b.möglicheZüge(perspektive.(spieler), aiRegeln.(ZugRegeln), true)
 	aiZüge := make([]minimax.Zug, len(züge))
 	for i, zug := range züge {

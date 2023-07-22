@@ -172,7 +172,7 @@ func (b Brett) bewertung(perspektive spieler, regeln ZugRegeln) int {
 	return perspektiveBewertung - gegnerBewertung
 }
 
-func (b Brett) Bewertung(perspektive minimax.Spieler, aiRegeln minimax.Regeln) int {
+func (b Brett) MinimaxBewertung(perspektive minimax.Spieler, aiRegeln minimax.Regeln) int {
 	return b.bewertung(perspektive.(spieler), aiRegeln.(ZugRegeln))
 }
 

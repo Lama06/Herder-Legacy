@@ -16,19 +16,19 @@ func max(a, b int) int {
 }
 
 type Spieler interface {
-	Gegner() Spieler
+	MinimaxGegner() Spieler
 }
 
 type Zug interface {
-	Ergebnis() Brett
+	MinimaxErgebnis() Brett
 }
 
 type Regeln any
 
 type Brett interface {
-	MöglicheZüge(perspektive Spieler, regeln Regeln) []Zug
+	MinimaxMöglicheZüge(perspektive Spieler, regeln Regeln) []Zug
 
-	Bewertung(perspektive Spieler, regeln Regeln) int
+	MinimaxBewertung(perspektive Spieler, regeln Regeln) int
 }
 
 func rekursiveBrettBewertung(
@@ -43,21 +43,21 @@ func rekursiveBrettBewertung(
 	}
 
 	if maximaleTiefe == 0 {
-		return brett.Bewertung(perspektive, regeln)
+		return brett.MinimaxBewertung(perspektive, regeln)
 	}
 
-	folgendeZüge := brett.MöglicheZüge(amZug, regeln)
+	folgendeZüge := brett.MinimaxMöglicheZüge(amZug, regeln)
 	if len(folgendeZüge) == 0 {
-		return brett.Bewertung(perspektive, regeln)
+		return brett.MinimaxBewertung(perspektive, regeln)
 	}
 
 	var besterFolgenderZugBewertung int
 	for i, folgenderZug := range folgendeZüge {
 		folgenderZugBewerung := rekursiveBrettBewertung(
-			folgenderZug.Ergebnis(),
+			folgenderZug.MinimaxErgebnis(),
 			regeln,
 			perspektive,
-			amZug.Gegner(),
+			amZug.MinimaxGegner(),
 			maximaleTiefe-1,
 		)
 		if i == 0 {
@@ -78,7 +78,7 @@ func BesterNächsterZug(brett Brett, regeln Regeln, amZug Spieler, maximaleTiefe
 		panic("maximaleTiefe <= 0")
 	}
 
-	möglicheZüge := brett.MöglicheZüge(amZug, regeln)
+	möglicheZüge := brett.MinimaxMöglicheZüge(amZug, regeln)
 	if len(möglicheZüge) == 0 {
 		return nil, false
 	}
@@ -89,10 +89,10 @@ func BesterNächsterZug(brett Brett, regeln Regeln, amZug Spieler, maximaleTiefe
 	)
 	for _, möglicherZug := range möglicheZüge {
 		zugErgebnisBewertung := rekursiveBrettBewertung(
-			möglicherZug.Ergebnis(),
+			möglicherZug.MinimaxErgebnis(),
 			regeln,
 			amZug,
-			amZug.Gegner(),
+			amZug.MinimaxGegner(),
 			maximaleTiefe-1,
 		)
 		if besterZug == nil || zugErgebnisBewertung > besterZugBewertung {

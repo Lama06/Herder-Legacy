@@ -15,6 +15,6 @@ func (s spieler) gegner() spieler {
 	return !s
 }
 
-func (s spieler) Gegner() minimax.Spieler {
+func (s spieler) MinimaxGegner() minimax.Spieler {
 	return s.gegner()
 }
