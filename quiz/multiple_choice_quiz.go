@@ -19,10 +19,29 @@ type MultipleChoiceQuizFrage struct {
 	FalscheAntworten []string
 }
 
+func (m MultipleChoiceQuizFrage) umkehren() MultipleChoiceQuizFrage {
+	return MultipleChoiceQuizFrage{
+		Frage:   m.Antwort,
+		Antwort: m.Frage,
+	}
+}
+
 type MultipleChoiceQuizConfig struct {
 	Name         string
 	ZeitProFrage int
 	Fragen       []MultipleChoiceQuizFrage
+}
+
+func (m MultipleChoiceQuizConfig) Umkehren(neuerName string) MultipleChoiceQuizConfig {
+	fragen := make([]MultipleChoiceQuizFrage, len(m.Fragen))
+	for i, frage := range m.Fragen {
+		fragen[i] = frage.umkehren()
+	}
+	return MultipleChoiceQuizConfig{
+		Name:         neuerName,
+		ZeitProFrage: m.ZeitProFrage,
+		Fragen:       fragen,
+	}
 }
 
 type MultipleChoiceQuizAuswertung struct {

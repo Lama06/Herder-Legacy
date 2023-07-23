@@ -8,6 +8,11 @@ func NewHauptstädtDerNachbarländerDeutschlandsQuizConfig(zeitProFrage int) Mul
 	}
 }
 
+func NewHauptstädteDerNachbarländerDeutschlandsUmgekehrtQuizConifg(zeitProFrage int) MultipleChoiceQuizConfig {
+	return NewHauptstädtDerNachbarländerDeutschlandsQuizConfig(zeitProFrage).
+		Umkehren("Hauptstädte der Nachbarländer Deutschlands Umgekehrt")
+}
+
 func NewHauptstädteEuropasQuizConfig(zeitProFrage int) MultipleChoiceQuizConfig {
 	return MultipleChoiceQuizConfig{
 		Name:         "Hauptstädte Europas",
@@ -16,12 +21,22 @@ func NewHauptstädteEuropasQuizConfig(zeitProFrage int) MultipleChoiceQuizConfig
 	}
 }
 
+func NewHauptstädteEuropasUmgekehrQuizConfig(zeitProFrage int) MultipleChoiceQuizConfig {
+	return NewHauptstädteEuropasQuizConfig(zeitProFrage).
+		Umkehren("Hauptstädte Europas Umgekehrt")
+}
+
 func NewHauptstädteInternationalQuizConfig(zeitProFrage int) MultipleChoiceQuizConfig {
 	return MultipleChoiceQuizConfig{
 		Name:         "Internationale Hauptstädte",
 		ZeitProFrage: zeitProFrage,
 		Fragen:       hauptstädteInternationalFragen,
 	}
+}
+
+func NewHauptstädteInternationalUmgekehrQuizConfig(zeitProFrage int) MultipleChoiceQuizConfig {
+	return NewHauptstädteInternationalQuizConfig(zeitProFrage).
+		Umkehren("Internationale Hauptstädte Umgekehrt")
 }
 
 var (
