@@ -131,6 +131,31 @@ func TestAstar(t *testing.T) {
 			pathFound: false,
 			path:      nil,
 		},
+		"path um Hindernis": {
+			// X
+			// XX
+			// SXZ
+			// XX
+			blockedPositions: map[position]struct{}{
+				{x: 1, y: -1}: {},
+				{x: 1, y: 0}:  {},
+				{x: 1, y: 1}:  {},
+				{x: 0, y: -1}: {},
+				{x: 0, y: -2}: {},
+				{x: 0, y: 1}:  {},
+			},
+			from:      position{x: 0, y: 0},
+			to:        position{x: 2, y: 0},
+			pathFound: true,
+			path: []position{
+				{x: 0, y: 0},
+				{x: -1, y: 1},
+				{x: 0, y: 2},
+				{x: 1, y: 2},
+				{x: 2, y: 1},
+				{x: 2, y: 0},
+			},
+		},
 	}
 
 	for name, testCase := range testCases {
