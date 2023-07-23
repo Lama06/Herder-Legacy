@@ -8,6 +8,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/breakout"
 	"github.com/Lama06/Herder-Legacy/dame"
 	"github.com/Lama06/Herder-Legacy/dialog"
+	"github.com/Lama06/Herder-Legacy/flappyoinky"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/openworld"
 	"github.com/Lama06/Herder-Legacy/passwortdreher"
@@ -115,6 +116,14 @@ func main() {
 				return dame.NewFreierModusScreen(
 					&herderLegacy,
 					newMenuScreen,
+				)
+			}),
+			dialog.NewAntwort("Flappyoinky", func() herderlegacy.Screen {
+				return flappyoinky.NewFlappyOinkyScreen(
+					&herderLegacy,
+					func(i int) herderlegacy.Screen {
+						return newMenuScreen()
+					},
 				)
 			}),
 		)
