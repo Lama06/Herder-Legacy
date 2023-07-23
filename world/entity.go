@@ -3,6 +3,9 @@ package world
 import "github.com/Lama06/Herder-Legacy/aabb"
 
 type Entity struct {
+	Name string
+	Tags map[string]struct{}
+
 	Level    Level
 	Position Position
 	Static   bool
@@ -51,6 +54,11 @@ type Entity struct {
 
 	HatImageRenderComponent bool
 	ImageRenderComponent    ImageRenderComponent
+}
+
+func (e *Entity) HasTag(tag string) bool {
+	_, hasTag := e.Tags[tag]
+	return hasTag
 }
 
 func (e *Entity) aabb() aabb.Aabb {

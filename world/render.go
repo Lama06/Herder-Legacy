@@ -51,6 +51,12 @@ func (w *World) drawEntities(screen *ebiten.Image) {
 		return
 	}
 
+	background, ok := w.Backgrounds[camera.Level]
+	if !ok {
+		background = color.Black
+	}
+	screen.Fill(background)
+
 	var renderableEntities []*Entity
 	for entity := range w.Entities {
 		if !entity.HatRenderComponent {
