@@ -218,6 +218,10 @@ func findShortestPath(w *World, level Level, from Position, to Position) ([]Posi
 			Y: float64(node.(pathfindingGridTile).y) * pathfinderGridSize,
 		}
 	}
+	positionPath[0] = from
+	if len(positionPath) >= 1 {
+		positionPath[len(positionPath)-1] = to
+	}
 	return positionPath, true
 }
 
