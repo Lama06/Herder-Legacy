@@ -36,7 +36,7 @@ type ImageRenderComponent struct {
 }
 
 func (w *World) findCamera() *Entity {
-	for entity := range w.Entites {
+	for entity := range w.Entities {
 		if !entity.HatCameraComponent {
 			continue
 		}
@@ -52,7 +52,7 @@ func (w *World) drawEntities(screen *ebiten.Image) {
 	}
 
 	var renderableEntities []*Entity
-	for entity := range w.Entites {
+	for entity := range w.Entities {
 		if !entity.HatRenderComponent {
 			continue
 		}

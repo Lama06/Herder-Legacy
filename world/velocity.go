@@ -6,7 +6,7 @@ type VelocityComponent struct {
 }
 
 func (w *World) applyVelocityToEntities() {
-	for entity := range w.Entites {
+	for entity := range w.Entities {
 		if !entity.HatVelocityComponent {
 			continue
 		}

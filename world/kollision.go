@@ -11,7 +11,7 @@ type RendererHitboxComponent struct{}
 type RigidbodyComponent struct{}
 
 func (w *World) rendererHitboxenAnwenden() {
-	for entity := range w.Entites {
+	for entity := range w.Entities {
 		if !entity.HatRendererHitboxComponent {
 			continue
 		}
@@ -118,14 +118,14 @@ func handleKollision(entity1, entity2 *Entity) {
 }
 
 func (w *World) kollisionenVerarbeiten() {
-	for entity1 := range w.Entites {
+	for entity1 := range w.Entities {
 		if !entity1.HatRigidbodyComponent || !entity1.HatHitboxComponent {
 			continue
 		}
 
 		aabb1 := entity1.aabb()
 
-		for entity2 := range w.Entites {
+		for entity2 := range w.Entities {
 			if entity1 == entity2 {
 				continue
 			}

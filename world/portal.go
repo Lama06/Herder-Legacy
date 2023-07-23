@@ -9,7 +9,7 @@ type PortalComponent struct {
 }
 
 func (w *World) teleportEntitiesTouchingPortal() {
-	for portal := range w.Entites {
+	for portal := range w.Entities {
 		if !portal.HatPortalComponent {
 			continue
 		}
@@ -21,12 +21,16 @@ func (w *World) teleportEntitiesTouchingPortal() {
 			Height: portal.PortalComponent.Height,
 		}
 
-		for entity := range w.Entites {
+		for entity := range w.Entities {
 			if entity == portal {
 				continue
 			}
 
 			if entity.Level != portal.Level {
+				continue
+			}
+
+			if entity.HatPathfinderComponent || !entity.HatHitboxComponent {
 				continue
 			}
 

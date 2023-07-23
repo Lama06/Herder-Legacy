@@ -13,7 +13,7 @@ type KeyboardMovementComponent struct {
 }
 
 func (w *World) entitiesMitKeyboardSteuern() {
-	for entity := range w.Entites {
+	for entity := range w.Entities {
 		if !entity.HatKeyboardMovementComponent {
 			continue
 		}
@@ -45,7 +45,7 @@ func (w *World) entitiesMitTouchSteuern() {
 	}
 	touchX, touchY := ebiten.TouchPosition(touchIds[0])
 
-	for entity := range w.Entites {
+	for entity := range w.Entities {
 		if !entity.HatTouchInputComponent {
 			continue
 		}
