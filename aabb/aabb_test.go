@@ -466,3 +466,48 @@ func TestHorizontalZerschneiden(t *testing.T) {
 		}
 	}
 }
+
+func TestRotieren(t *testing.T) {
+	testCases := []struct {
+		input   aabb.Aabb
+		winkel  float64
+		rotiert aabb.Aabb
+	}{
+		{
+			input: aabb.Aabb{
+				X:      0,
+				Y:      0,
+				Width:  1,
+				Height: 1,
+			},
+			winkel: math.Pi / 2,
+			rotiert: aabb.Aabb{
+				X:      -1,
+				Y:      0,
+				Width:  1,
+				Height: 1,
+			},
+		},
+		{
+			input: aabb.Aabb{
+				X:      0,
+				Y:      0,
+				Width:  1,
+				Height: 1,
+			},
+			winkel: 2 * math.Pi,
+			rotiert: aabb.Aabb{
+				X:      0,
+				Y:      0,
+				Width:  1,
+				Height: 1,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		if rotiert := testCase.input.Rotieren(testCase.winkel); !aabbsRoughlyEqual(rotiert, testCase.rotiert) {
+			t.Errorf("exptected: %v, got: %v", testCase.rotiert, rotiert)
+		}
+	}
+}

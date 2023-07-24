@@ -1,9 +1,14 @@
 package world
 
-import "math"
+import (
+	"math"
+
+	"github.com/Lama06/Herder-Legacy/aabb"
+)
 
 type HitboxComponent struct {
-	Width, Height float64
+	Width, Height    float64
+	OffsetX, OffsetY float64
 }
 
 type RendererHitboxComponent struct{}
@@ -31,9 +36,24 @@ func (w *World) rendererHitboxenAnwenden() {
 			}
 		case entity.HatImageRenderComponent:
 			entity.HatHitboxComponent = true
+
+			scale := entity.ImageRenderComponent.Scale
+			if scale == 0 {
+				scale = 1
+			}
+
+			hitbox := aabb.Aabb{
+				X:      0,
+				Y:      0,
+				Width:  float64(entity.ImageRenderComponent.Image.Bounds().Dx()) * scale,
+				Height: float64(entity.ImageRenderComponent.Image.Bounds().Dy()) * scale,
+			}.Rotieren(entity.ImageRenderComponent.Rotation)
+
 			entity.HitboxComponent = HitboxComponent{
-				Width:  float64(entity.ImageRenderComponent.Image.Bounds().Dx()) * entity.ImageRenderComponent.Scale,
-				Height: float64(entity.ImageRenderComponent.Image.Bounds().Dy()) * entity.ImageRenderComponent.Scale,
+				OffsetX: hitbox.X,
+				OffsetY: hitbox.Y,
+				Width:   hitbox.Width,
+				Height:  hitbox.Height,
 			}
 		}
 	}

@@ -1,6 +1,8 @@
 package herder
 
 import (
+	"math"
+
 	"github.com/Lama06/Herder-Legacy/assets"
 	"github.com/Lama06/Herder-Legacy/world"
 )
@@ -67,27 +69,9 @@ func CreateHerder() *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image: assets.RequireImage("tisch.png"),
-			Scale: 2,
-		},
-		HatRendererHitboxComponent: true,
-	})
-	w.SpawnEntity(&world.Entity{
-		Level: 0,
-		Position: world.Position{
-			X: 300,
-			Y: 100,
-		},
-		Static:             true,
-		HatRenderComponent: true,
-		RenderComponent: world.RenderComponent{
-			Layer: 0,
-		},
-		HatRigidbodyComponent:   true,
-		HatImageRenderComponent: true,
-		ImageRenderComponent: world.ImageRenderComponent{
-			Image: assets.RequireImage("tisch.png"),
-			Scale: 1.798756,
+			Image:    assets.RequireImage("tisch.png"),
+			Scale:    2,
+			Rotation: math.Pi / 4,
 		},
 		HatRendererHitboxComponent: true,
 	})

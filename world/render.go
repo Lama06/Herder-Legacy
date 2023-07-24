@@ -31,8 +31,9 @@ type KreisRenderComponent struct {
 }
 
 type ImageRenderComponent struct {
-	Image *ebiten.Image
-	Scale float64
+	Image    *ebiten.Image
+	Rotation float64
+	Scale    float64
 }
 
 func (w *World) findCamera() *Entity {
@@ -133,13 +134,14 @@ func (w *World) drawEntities(screen *ebiten.Image) {
 				Y:      screenY,
 				Width:  float64(entity.ImageRenderComponent.Image.Bounds().Dx()) * scale,
 				Height: float64(entity.ImageRenderComponent.Image.Bounds().Dy()) * scale,
-			}
+			}.Rotieren(entity.ImageRenderComponent.Rotation)
 			if !imageAabb.KollidiertMit(screenAabb) {
 				continue
 			}
 
 			var drawOptions ebiten.DrawImageOptions
 			drawOptions.GeoM.Scale(scale, scale)
+			drawOptions.GeoM.Rotate(entity.ImageRenderComponent.Rotation)
 			drawOptions.GeoM.Translate(screenX, screenY)
 			screen.DrawImage(entity.ImageRenderComponent.Image, &drawOptions)
 		}

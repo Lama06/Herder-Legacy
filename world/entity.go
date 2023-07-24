@@ -66,8 +66,8 @@ func (e *Entity) aabb() aabb.Aabb {
 		panic("missing hitbox")
 	}
 	return aabb.Aabb{
-		X:      e.Position.X,
-		Y:      e.Position.Y,
+		X:      e.Position.X + e.HitboxComponent.OffsetX,
+		Y:      e.Position.Y + e.HitboxComponent.OffsetY,
 		Width:  e.HitboxComponent.Width,
 		Height: e.HitboxComponent.Height,
 	}
