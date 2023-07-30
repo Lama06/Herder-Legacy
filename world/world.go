@@ -55,6 +55,7 @@ func (w *World) Update() {
 	w.moveEntitiesToPosition()
 	w.teleportEntitiesTouchingPortal()
 	w.kollisionenVerarbeiten()
+	w.interaktionenHandeln()
 }
 
 func (w *World) Draw(screen *ebiten.Image) {

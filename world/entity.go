@@ -28,6 +28,9 @@ type Entity struct {
 	HatTouchInputComponent bool
 	TouchInputComponent    TouchInputComponent
 
+	HatInteraktionComponent bool
+	InteraktionComponent    InteraktionComponent
+
 	HatMoveToPositionComponent bool
 	MoveToPositionComponent    MoveToPositionComponent
 

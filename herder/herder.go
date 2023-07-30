@@ -4,10 +4,12 @@ import (
 	"math"
 
 	"github.com/Lama06/Herder-Legacy/assets"
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/Lama06/Herder-Legacy/world"
 )
 
-func CreateHerder() *world.World {
+func CreateHerder(herderLegacy herderlegacy.HerderLegacy) *world.World {
 	w := world.NewEmptyWorld()
 	bodenImg := assets.RequireImage("boden.png")
 	for zeile := 0; zeile < 30; zeile++ {
@@ -74,6 +76,24 @@ func CreateHerder() *world.World {
 			Rotation: math.Pi / 4,
 		},
 		HatRendererHitboxComponent: true,
+		HatInteraktionComponent:    true,
+		InteraktionComponent: world.InteraktionComponent{
+			OffsetX: 0,
+			OffsetY: 0,
+			Width:   50,
+			Height:  50,
+			Callback: func() {
+				thisScreen := herderLegacy.CurrentScreen()
+
+				herderLegacy.OpenScreen(ui.NewCountdown(ui.CountdownConfig{
+					Position:  ui.NewCenteredPosition(ui.Width/2, ui.Height/2),
+					StartZeit: 10 * 60,
+					AbgelaufenCallback: func() {
+						herderLegacy.OpenScreen(thisScreen)
+					},
+				}))
+			},
+		},
 	})
 	w.SpawnEntity(&world.Entity{
 		Level: 0,

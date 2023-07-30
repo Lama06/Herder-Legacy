@@ -80,7 +80,7 @@ func main() {
 			"Herr Weber",
 			"Was willst du spielen",
 			dialog.NewAntwort("Openworld", func() herderlegacy.Screen {
-				return openworld.NewOpenWorldScreen()
+				return openworld.NewOpenWorldScreen(&herderLegacy)
 			}),
 			dialog.NewAntwort("Breakout", func() herderlegacy.Screen {
 				return breakout.NewFreierModusScreen(

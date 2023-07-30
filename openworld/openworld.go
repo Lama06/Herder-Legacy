@@ -12,8 +12,8 @@ type openWorldScreen struct {
 	world *world.World
 }
 
-func NewOpenWorldScreen() herderlegacy.Screen {
-	w := herder.CreateHerder()
+func NewOpenWorldScreen(herderLegacy herderlegacy.HerderLegacy) herderlegacy.Screen {
+	w := herder.CreateHerder(herderLegacy)
 	w.SpawnEntity(&world.Entity{
 		Level: 0,
 		Position: world.Position{

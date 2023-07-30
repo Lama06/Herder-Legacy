@@ -36,6 +36,12 @@ type ImageRenderComponent struct {
 	Scale    float64
 }
 
+func calculateScreenPosition(entity, camera *Entity) (x, y float64) {
+	screenX := ui.Width/2 + entity.Position.X - camera.Position.X + camera.CameraComponent.OffsetX
+	screenY := ui.Height/2 + entity.Position.Y - camera.Position.Y + camera.CameraComponent.OffsetY
+	return screenX, screenY
+}
+
 func (w *World) findCamera() *Entity {
 	for entity := range w.Entities {
 		if !entity.HatCameraComponent {
@@ -76,8 +82,7 @@ func (w *World) drawEntities(screen *ebiten.Image) {
 	})
 
 	for _, entity := range renderableEntities {
-		screenX := ui.Width/2 + entity.Position.X - camera.Position.X + camera.CameraComponent.OffsetX
-		screenY := ui.Height/2 + entity.Position.Y - camera.Position.Y + camera.CameraComponent.OffsetY
+		screenX, screenY := calculateScreenPosition(entity, camera)
 
 		screenAabb := aabb.Aabb{X: 0, Y: 0, Width: ui.Width, Height: ui.Height}
 
