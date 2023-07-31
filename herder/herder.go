@@ -11,6 +11,8 @@ import (
 
 func CreateHerder(herderLegacy herderlegacy.HerderLegacy) *world.World {
 	w := world.NewEmptyWorld()
+	w.LevelNames[0] = "Weber"
+	w.LevelNames[1] = "E202"
 	bodenImg := assets.RequireImage("boden.png")
 	for zeile := 0; zeile < 30; zeile++ {
 		for spalte := 0; spalte < 30; spalte++ {

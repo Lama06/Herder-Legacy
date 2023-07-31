@@ -36,9 +36,9 @@ type ImageRenderComponent struct {
 	Scale    float64
 }
 
-func calculateScreenPosition(entity, camera *Entity) (x, y float64) {
-	screenX := ui.Width/2 + entity.Position.X - camera.Position.X + camera.CameraComponent.OffsetX
-	screenY := ui.Height/2 + entity.Position.Y - camera.Position.Y + camera.CameraComponent.OffsetY
+func calculateScreenPosition(worldPosition Position, camera *Entity) (x, y float64) {
+	screenX := ui.Width/2 + worldPosition.X - camera.Position.X + camera.CameraComponent.OffsetX
+	screenY := ui.Height/2 + worldPosition.Y - camera.Position.Y + camera.CameraComponent.OffsetY
 	return screenX, screenY
 }
 
@@ -82,7 +82,7 @@ func (w *World) drawEntities(screen *ebiten.Image) {
 	})
 
 	for _, entity := range renderableEntities {
-		screenX, screenY := calculateScreenPosition(entity, camera)
+		screenX, screenY := calculateScreenPosition(entity.Position, camera)
 
 		screenAabb := aabb.Aabb{X: 0, Y: 0, Width: ui.Width, Height: ui.Height}
 
@@ -151,4 +151,16 @@ func (w *World) drawEntities(screen *ebiten.Image) {
 			screen.DrawImage(entity.ImageRenderComponent.Image, &drawOptions)
 		}
 	}
+}
+
+func (w *World) updateLevelName() {
+	w.levelNameWidget.Update()
+
+	camera := w.findCamera()
+	if camera == nil {
+		return
+	}
+
+	levelName := w.LevelNames[camera.Level]
+	w.levelNameWidget.SetText(levelName)
 }

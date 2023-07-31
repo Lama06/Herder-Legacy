@@ -23,7 +23,7 @@ func (w *World) interaktionenHandeln() {
 			continue
 		}
 
-		screenX, screenY := calculateScreenPosition(entity, camera)
+		screenX, screenY := calculateScreenPosition(entity.Position, camera)
 		hitbox := aabb.Aabb{
 			X:      screenX + entity.InteraktionComponent.OffsetX,
 			Y:      screenY + entity.InteraktionComponent.OffsetY,
