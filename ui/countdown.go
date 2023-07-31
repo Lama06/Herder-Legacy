@@ -1,19 +1,60 @@
 package ui
 
 import (
+	"image/color"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/colornames"
 )
 
+type CountdownColorPalette struct {
+	Color      color.Color
+	HoverColor color.Color
+
+	LittleTimeColor      color.Color
+	LittleTimeHoverColor color.Color
+}
+
+var defaultCountdownColorPalette = CountdownColorPalette{
+	Color:                colornames.Green,
+	HoverColor:           colornames.Darkgreen,
+	LittleTimeColor:      colornames.Red,
+	LittleTimeHoverColor: colornames.Darkred,
+}
+
+func (c CountdownColorPalette) hoverColorOrDefault() color.Color {
+	if c.HoverColor == nil {
+		return c.Color
+	}
+	return c.HoverColor
+}
+
+func (c CountdownColorPalette) littleTimeColorOrDefault() color.Color {
+	if c.LittleTimeColor == nil {
+		return c.hoverColorOrDefault()
+	}
+	return c.LittleTimeColor
+}
+
+func (c CountdownColorPalette) littleTimeHoverColorOrDefault() color.Color {
+	if c.LittleTimeHoverColor == nil {
+		return c.littleTimeColorOrDefault()
+	}
+	return c.LittleTimeHoverColor
+}
+
 type CountdownConfig struct {
 	Position           Position
 	StartZeit          int
 	AbgelaufenCallback func()
+	CustomColorPalette bool
+	ColorPalette       CountdownColorPalette
 }
 
 type Countdown struct {
+	colorPalette CountdownColorPalette
+
 	title            *Title
 	verbleibendeZeit int
 
@@ -28,7 +69,13 @@ func NewCountdown(config CountdownConfig) *Countdown {
 		panic("Zeit negativ")
 	}
 
+	colorPalette := defaultCountdownColorPalette
+	if config.CustomColorPalette {
+		colorPalette = config.ColorPalette
+	}
+
 	return &Countdown{
+		colorPalette: colorPalette,
 		title: NewTitle(TitleConfig{
 			Position: config.Position,
 		}),
@@ -84,13 +131,13 @@ func (c *Countdown) Update() {
 	c.title.SetText(strconv.Itoa(c.verbleibendeZeit/60 + 1))
 	if c.verbleibendeZeit > 3*60 {
 		c.title.SetColorPalette(TitleColorPalette{
-			Color:      colornames.Green,
-			HoverColor: colornames.Darkgreen,
+			Color:      c.colorPalette.Color,
+			HoverColor: c.colorPalette.hoverColorOrDefault(),
 		})
 	} else {
 		c.title.SetColorPalette(TitleColorPalette{
-			Color:      colornames.Red,
-			HoverColor: colornames.Darkred,
+			Color:      c.colorPalette.littleTimeColorOrDefault(),
+			HoverColor: c.colorPalette.littleTimeHoverColorOrDefault(),
 		})
 	}
 }

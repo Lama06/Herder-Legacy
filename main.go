@@ -10,6 +10,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/flappyoinky"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/leitstellenspiel"
 	"github.com/Lama06/Herder-Legacy/openworld"
 	"github.com/Lama06/Herder-Legacy/passwortdreher"
 	"github.com/Lama06/Herder-Legacy/quiz"
@@ -122,6 +123,14 @@ func main() {
 				return flappyoinky.NewFlappyOinkyScreen(
 					&herderLegacy,
 					func(i int) herderlegacy.Screen {
+						return newMenuScreen()
+					},
+				)
+			}),
+			dialog.NewAntwort("Lss", func() herderlegacy.Screen {
+				return leitstellenspiel.NewLeitstellenspielBotScreen(
+					&herderLegacy,
+					func() herderlegacy.Screen {
 						return newMenuScreen()
 					},
 				)
