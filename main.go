@@ -13,6 +13,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/leitstellenspiel"
 	"github.com/Lama06/Herder-Legacy/openworld"
 	"github.com/Lama06/Herder-Legacy/passwortdreher"
+	"github.com/Lama06/Herder-Legacy/poker"
 	"github.com/Lama06/Herder-Legacy/quiz"
 	"github.com/Lama06/Herder-Legacy/stabwelle"
 	"github.com/Lama06/Herder-Legacy/ui"
@@ -134,6 +135,9 @@ func main() {
 						return newMenuScreen()
 					},
 				)
+			}),
+			dialog.NewAntwort("Poker", func() herderlegacy.Screen {
+				return poker.NewSpielScreen()
 			}),
 		)
 	}
