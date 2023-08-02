@@ -4,11 +4,11 @@ import "testing"
 
 func TestParseHand(t *testing.T) {
 	testCases := map[string]struct {
-		karten handKartenAuswahl
+		karten [7]karte
 		hand   hand
 	}{
 		"Höchste Karte": {
-			karten: handKartenAuswahl{
+			karten: [7]karte{
 				mustParseKarte("Herz König"),
 				mustParseKarte("Pik Dame"),
 				mustParseKarte("Kreuz Ass"),
@@ -26,7 +26,7 @@ func TestParseHand(t *testing.T) {
 			},
 		},
 		"Ein Paar": {
-			karten: handKartenAuswahl{
+			karten: [7]karte{
 				mustParseKarte("Herz König"),
 				mustParseKarte("Kreuz Ass"),
 				mustParseKarte("Herz 2"),
@@ -54,5 +54,21 @@ func TestParseHand(t *testing.T) {
 		if got != testCase.hand {
 			t.Errorf("%v: expected: %T %v, got: %T %v", name, testCase.hand, testCase.hand, got, got)
 		}
+	}
+}
+
+func BenchmarkParseHand(b *testing.B) {
+	karten := [7]karte{
+		mustParseKarte("Herz König"),
+		mustParseKarte("Pik Dame"),
+		mustParseKarte("Kreuz Ass"),
+		mustParseKarte("Herz 2"),
+		mustParseKarte("Herz 3"),
+		mustParseKarte("Herz 4"),
+		mustParseKarte("Pik 5"),
+	}
+
+	for i := 0; i < b.N; i++ {
+		parseHand(karten)
 	}
 }

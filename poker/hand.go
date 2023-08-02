@@ -21,29 +21,34 @@ func ersteWertwiederholungFinden(karten []karte, länge int) (
 	übrigeKarten []karte,
 	gefunden bool,
 ) {
-karten:
-	for i := range karten {
-		if i < länge-1 {
+	var (
+		wiederholenderWert       wert
+		wiederholenderWertAnzahl int
+	)
+
+	for i, karte := range karten {
+		if i == 0 {
+			wiederholenderWert = karte.wert
+			wiederholenderWertAnzahl = 1
 			continue
 		}
 
-		wiederholterWert := karten[i].wert
-		for offset := 1; offset < länge; offset++ {
-			if karten[i-offset].wert != wiederholterWert {
-				continue karten
-			}
+		if karte.wert != wiederholenderWert {
+			wiederholenderWert = karte.wert
+			wiederholenderWertAnzahl = 1
+			continue
 		}
 
-		kartenMitWiederholtemWert = karten[i-länge+1 : i+1]
-		übrigeKarten = append(karten[:i-länge+1:i-länge+1], karten[i+1:]...)
-
-		return kartenMitWiederholtemWert, übrigeKarten, true
+		wiederholenderWertAnzahl++
+		if wiederholenderWertAnzahl == länge {
+			kartenMitWiederholtemWert = karten[i-länge+1 : i+1]
+			übrigeKarten = append(karten[:i-länge+1:i-länge+1], karten[i+1:]...)
+			return kartenMitWiederholtemWert, übrigeKarten, true
+		}
 	}
 
 	return nil, nil, false
 }
-
-type handKartenAuswahl [7]karte
 
 type handArt int8
 
@@ -84,6 +89,29 @@ func (h handArt) parser() handParser {
 	}
 }
 
+func (h handArt) String() string {
+	switch h {
+	case handArtHöchsteKarte:
+		return "Höchste Karte"
+	case handArtEinPaar:
+		return "Ein Paar"
+	case handArtZweiPaare:
+		return "Zwei Paare"
+	case handArtDrilling:
+		return "Drilling"
+	case handArtStraße:
+		return "Straße"
+	case handArtFlush:
+		return "Flush"
+	case handArtFullHouse:
+		return "Full House"
+	case handArtVierling:
+		return "Vierling"
+	default:
+		panic("unreachable")
+	}
+}
+
 type hand interface {
 	art() handArt
 
@@ -94,9 +122,10 @@ type hand interface {
 	visualisierung(karte) color.Color
 }
 
-type handParser func(handKartenAuswahl) hand
+type handParser func([7]karte) hand
 
-func parseHand(karten handKartenAuswahl) hand {
+func parseHand(karten [7]karte) hand {
+	kartenNachWertSortieren(karten[:])
 	for art := handArtVierling; art >= handArtHöchsteKarte; art-- {
 		if hand := art.parser()(karten); hand != nil {
 			return hand
@@ -130,8 +159,7 @@ func compareHände(hand1, hand2 hand) int {
 
 type höchsteKarteHand [5]karte
 
-func parseHöchsteKarteHand(karten handKartenAuswahl) hand {
-	kartenNachWertSortieren(karten[:])
+func parseHöchsteKarteHand(karten [7]karte) hand {
 	return höchsteKarteHand(karten[:5])
 }
 
@@ -165,8 +193,7 @@ type einPaarHand struct {
 	beikarten [3]karte
 }
 
-func parseEinPaarHand(karten handKartenAuswahl) hand {
-	kartenNachWertSortieren(karten[:])
+func parseEinPaarHand(karten [7]karte) hand {
 	paar, übrig, gefunden := ersteWertwiederholungFinden(karten[:], 2)
 	if !gefunden {
 		return nil
@@ -207,8 +234,7 @@ type zweiPaareHand struct {
 	beikarte     karte
 }
 
-func parseZweiPaareHand(karten handKartenAuswahl) hand {
-	kartenNachWertSortieren(karten[:])
+func parseZweiPaareHand(karten [7]karte) hand {
 	paar1, übrig, gefunden := ersteWertwiederholungFinden(karten[:], 2)
 	if !gefunden {
 		return nil
@@ -254,8 +280,7 @@ type drillingHand struct {
 	beikarten [2]karte
 }
 
-func parseDrillingsHand(karten handKartenAuswahl) hand {
-	kartenNachWertSortieren(karten[:])
+func parseDrillingsHand(karten [7]karte) hand {
 	drilling, übrig, gefunden := ersteWertwiederholungFinden(karten[:], 3)
 	if !gefunden {
 		return nil
@@ -293,8 +318,7 @@ func (d drillingHand) visualisierung(karte karte) color.Color {
 
 type straßeHand [5]karte
 
-func parseStraßeHand(karten handKartenAuswahl) hand {
-	kartenNachWertSortieren(karten[:])
+func parseStraßeHand(karten [7]karte) hand {
 höchsterWertIndex:
 	for höchstekarteIndex := 0; höchstekarteIndex <= 1; höchstekarteIndex++ {
 		höchsteKarte := karten[höchstekarteIndex]
@@ -334,20 +358,28 @@ func (s straßeHand) visualisierung(karte karte) color.Color {
 
 type flushHand [5]karte
 
-func parseFlushHand(karten handKartenAuswahl) hand {
-	kartenNachSymbol := make(map[symbol][]karte)
-	for _, karte := range karten {
-		kartenNachSymbol[karte.symbol] = append(kartenNachSymbol[karte.symbol], karte)
-	}
-	for _, kartenMitSymbol := range kartenNachSymbol {
-		if len(kartenMitSymbol) != 5 {
-			continue
+func parseFlushHand(karten [7]karte) hand {
+	for s := symbolPik; s <= symbolKreuz; s++ {
+		var anzahl int
+		for _, k := range karten {
+			if k.symbol != s {
+				continue
+			}
+
+			anzahl++
+			if anzahl == 5 {
+				kartenMitSymbol := make([]karte, 0, 5)
+				for _, k := range karten {
+					if k.symbol != s {
+						continue
+					}
+					kartenMitSymbol = append(kartenMitSymbol, k)
+				}
+				return flushHand(kartenMitSymbol)
+			}
 		}
-
-		kartenNachWertSortieren(kartenMitSymbol)
-
-		return flushHand(kartenMitSymbol)
 	}
+
 	return nil
 }
 
@@ -377,8 +409,7 @@ type fullHouseHand struct {
 	paar     [2]karte
 }
 
-func parseFullHouseHand(karten handKartenAuswahl) hand {
-	kartenNachWertSortieren(karten[:])
+func parseFullHouseHand(karten [7]karte) hand {
 	drilling, übrig, gefunden := ersteWertwiederholungFinden(karten[:], 3)
 	if !gefunden {
 		return nil
@@ -421,8 +452,7 @@ type vierlingHand struct {
 	beikarte karte
 }
 
-func parseVierlingHand(karten handKartenAuswahl) hand {
-	kartenNachWertSortieren(karten[:])
+func parseVierlingHand(karten [7]karte) hand {
 	vierling, übrig, gefunden := ersteWertwiederholungFinden(karten[:], 4)
 	if !gefunden {
 		return nil
