@@ -17,6 +17,7 @@ const (
 	symbolHerz
 	symbolKaro
 	symbolKreuz
+	anzahlSymbole
 )
 
 func parseSymbol(text string) (symbol symbol, ok bool) {

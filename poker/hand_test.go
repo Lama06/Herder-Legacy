@@ -47,6 +47,54 @@ func TestParseHand(t *testing.T) {
 				},
 			},
 		},
+		"Straße": {
+			karten: [7]karte{
+				mustParseKarte("Karo 6"),
+				mustParseKarte("Herz 7"),
+				mustParseKarte("Pik 8"),
+				mustParseKarte("Pik 10"),
+				mustParseKarte("Karo 9"),
+				mustParseKarte("Herz 10"),
+				mustParseKarte("Kreuz 9"),
+			},
+			hand: straßeHand{
+				mustParseKarte("Herz 10"),
+				mustParseKarte("Kreuz 9"),
+				mustParseKarte("Pik 8"),
+				mustParseKarte("Herz 7"),
+				mustParseKarte("Karo 6"),
+			},
+		},
+		"Straight Flush": {
+			karten: [7]karte{
+				mustParseKarte("Pik Ass"),
+				mustParseKarte("Pik König"),
+				mustParseKarte("Herz König"),
+				mustParseKarte("Herz Dame"),
+				mustParseKarte("Herz Bube"),
+				mustParseKarte("Herz 10"),
+				mustParseKarte("Herz 9"),
+			},
+			hand: straightFlushHand{
+				mustParseKarte("Herz König"),
+				mustParseKarte("Herz Dame"),
+				mustParseKarte("Herz Bube"),
+				mustParseKarte("Herz 10"),
+				mustParseKarte("Herz 9"),
+			},
+		},
+		"Royal Flush": {
+			karten: [7]karte{
+				mustParseKarte("Herz Ass"),
+				mustParseKarte("Herz König"),
+				mustParseKarte("Herz Dame"),
+				mustParseKarte("Herz Bube"),
+				mustParseKarte("Herz 10"),
+				mustParseKarte("Herz 9"),
+				mustParseKarte("Pik 2"),
+			},
+			hand: royalFlush(symbolHerz),
+		},
 	}
 
 	for name, testCase := range testCases {

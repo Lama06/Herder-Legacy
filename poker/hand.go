@@ -63,6 +63,7 @@ const (
 	handArtVierling
 	handArtStraightFlush
 	handArtRoyalFlush
+	anzahlHandArten
 )
 
 func (h handArt) parser() handParser {
@@ -84,7 +85,12 @@ func (h handArt) parser() handParser {
 	case handArtVierling:
 		return parseVierlingHand
 	case handArtStraightFlush:
-		return parseStraightFlushHand
+		return func(karten [7]karte) hand {
+			if hand, ok := parseStraightFlushHand(karten); ok {
+				return hand
+			}
+			return nil
+		}
 	case handArtRoyalFlush:
 		return parseRoyalFlush
 	default:
@@ -326,15 +332,36 @@ func (d drillingHand) visualisierung(karte karte) color.Color {
 type straßeHand [5]karte
 
 func parseStraßeHand(karten [7]karte) hand {
-höchsterWertIndex:
-	for höchstekarteIndex := 0; höchstekarteIndex <= 1; höchstekarteIndex++ {
-		höchsteKarte := karten[höchstekarteIndex]
-		for offset := 1; offset <= 4; offset++ {
-			if karten[höchstekarteIndex+offset].wert != höchsteKarte.wert-wert(offset) {
-				continue höchsterWertIndex
-			}
+	var (
+		anfangsIndexDerStraße int
+		längeDerStraße        int
+		letzerWertDerStraße   wert
+	)
+	for i, k := range karten {
+		if i == 0 || (k.wert != letzerWertDerStraße-1 && k.wert != letzerWertDerStraße) {
+			anfangsIndexDerStraße = i
+			letzerWertDerStraße = k.wert
+			längeDerStraße = 1
+			continue
 		}
-		return straßeHand(karten[höchstekarteIndex : höchstekarteIndex+5])
+
+		if k.wert != letzerWertDerStraße {
+			längeDerStraße++
+			letzerWertDerStraße = k.wert
+		}
+
+		if längeDerStraße != 5 {
+			continue
+		}
+
+		straßeKarten := make([]karte, 0, 5)
+		for _, k := range karten[anfangsIndexDerStraße : i+1] {
+			if len(straßeKarten) != 0 && k.wert == straßeKarten[len(straßeKarten)-1].wert {
+				continue
+			}
+			straßeKarten = append(straßeKarten, k)
+		}
+		return straßeHand(straßeKarten)
 	}
 
 	return nil
@@ -495,25 +522,46 @@ func (v vierlingHand) visualisierung(karte karte) color.Color {
 
 type straightFlushHand [5]karte
 
-func parseStraightFlushHand(karten [7]karte) hand {
-	straße := parseStraßeHand(karten)
-	if straße == nil {
-		return nil
+func parseStraightFlushHand(karten [7]karte) (straightFlushHand, bool) {
+	for s := symbol(0); s < anzahlSymbole; s++ {
+		var (
+			straßeBegonnen        bool
+			anfangsIndexDerStraße int
+			längeDerStraße        int
+			letzerWertDerStraße   wert
+		)
+		for i, k := range karten {
+			if k.symbol != s {
+				continue
+			}
+
+			if !straßeBegonnen || k.wert != letzerWertDerStraße-1 {
+				straßeBegonnen = true
+				anfangsIndexDerStraße = i
+				letzerWertDerStraße = k.wert
+				längeDerStraße = 1
+				continue
+			}
+
+			längeDerStraße++
+			letzerWertDerStraße = k.wert
+
+			if längeDerStraße != 5 {
+				continue
+			}
+
+			straßeKarten := make([]karte, 0, 5)
+			for _, k := range karten[anfangsIndexDerStraße : i+1] {
+				if k.symbol != s {
+					continue
+				}
+				straßeKarten = append(straßeKarten, k)
+			}
+			return straightFlushHand(straßeKarten), true
+		}
 	}
 
-	var gleichesSymbol symbol
-	for i, karte := range straße.(straßeHand) {
-		if i == 0 {
-			gleichesSymbol = karte.symbol
-			continue
-		}
-
-		if karte.symbol != gleichesSymbol {
-			return nil
-		}
-	}
-
-	return straightFlushHand(straße.(straßeHand))
+	return straightFlushHand{}, false
 }
 
 func (s straightFlushHand) art() handArt {
@@ -542,11 +590,11 @@ func (s straightFlushHand) visualisierung(karte karte) color.Color {
 type royalFlush symbol
 
 func parseRoyalFlush(karten [7]karte) hand {
-	straightFlush := parseStraightFlushHand(karten)
-	if straightFlush == nil || straightFlush.(straightFlushHand)[0].wert != wertAss {
+	straightFlush, ok := parseStraightFlushHand(karten)
+	if !ok || straightFlush[0].wert != wertAss {
 		return nil
 	}
-	return royalFlush(straightFlush.(straightFlushHand)[0].symbol)
+	return royalFlush(straightFlush[0].symbol)
 }
 
 func (r royalFlush) art() handArt {

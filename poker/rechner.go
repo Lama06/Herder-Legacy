@@ -85,6 +85,18 @@ func NewPokerRechnerScreen(
 						return
 					}
 
+					if kartenEnthaltenDuplikate(append(mittelKarten, append(abgelegteKarten, eigeneKarten[0], eigeneKarten[1])...)) {
+						herderLegacy.OpenScreen(ui.NewMessageScreen(herderLegacy, ui.MessageScreenConfig{
+							Title:        "Fehler: Doppelte Karten",
+							Text:         "Es gibt beim Poker jede Karte nur einmal.",
+							ContinueText: "Karten bearbeiten",
+							ContinueAction: func() herderlegacy.Screen {
+								return thisScreen
+							},
+						}))
+						return
+					}
+
 					herderLegacy.OpenScreen(ui.NewMessageScreen(herderLegacy, ui.MessageScreenConfig{
 						Title:        "Chancen berechnen",
 						Text:         "Hinweis: Das Berechnen der Chancen kann etwas dauern.",
@@ -103,12 +115,12 @@ func NewPokerRechnerScreen(
 
 							var text strings.Builder
 							text.WriteString("Du hast folgende Chancen auf die Poker Kombinationen:")
-							for handArt := handArtHöchsteKarte; handArt <= handArtRoyalFlush; handArt++ {
+							for handArt := handArt(0); handArt < anzahlHandArten; handArt++ {
 								text.WriteString(fmt.Sprintf("\n%v: %v%% (%v Möglichkeiten)",
 									handArt, eigeneHandWahrscheinlichkeiten[handArt]*100, eigeneHandMöglichkeiten[handArt]))
 							}
 							text.WriteString("\n\nDeine Gegner haben (aus deiner Sicht) folgende Chancen auf die Poker Kombinationen:")
-							for handArt := handArtHöchsteKarte; handArt <= handArtRoyalFlush; handArt++ {
+							for handArt := handArt(0); handArt < anzahlHandArten; handArt++ {
 								text.WriteString(fmt.Sprintf("\n%v: %v%% (%v Möglichkeiten)",
 									handArt, gegnerHandWahrscheinlichkeiten[handArt]*100, gegnerHandMöglichkeiten[handArt]))
 							}
@@ -140,6 +152,7 @@ func newKartenAuswahlScreen(
 ) herderlegacy.Screen {
 	widgets := make([]ui.ListScreenWidget, len(karten))
 	for i, karte := range karten {
+		i := i
 		widgets[i] = ui.ListScreenButtonWidget{
 			Text: karte.String(),
 			Callback: func() {
@@ -162,7 +175,6 @@ func newKartenAuswahlScreen(
 
 			herderLegacy.OpenScreen(ui.NewListScreen(herderLegacy, ui.ListScreenConfig{
 				Title: "Karte hinzufügen",
-				Text:  "",
 				Widgets: []ui.ListScreenWidget{
 					ui.ListScreenSelectionWidget[symbol]{
 						Text:   "Symbol",
@@ -198,12 +210,29 @@ func newKartenAuswahlScreen(
 
 	return ui.NewListScreen(herderLegacy, ui.ListScreenConfig{
 		Title:      title,
+		Text:       "Eine Karte zum Entfernen anklicken",
 		Widgets:    widgets,
 		CancelText: "Speichern",
 		CancelAction: func() herderlegacy.Screen {
 			return nächsterScreen(karten)
 		},
 	})
+}
+
+func kartenEnthaltenDuplikate(karten []karte) bool {
+	for index1, karte1 := range karten {
+		for index2, karte2 := range karten {
+			if index1 == index2 {
+				continue
+			}
+
+			if karte1 == karte2 {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func eigeneHandArtenMöglichkeitenBerechnen(
