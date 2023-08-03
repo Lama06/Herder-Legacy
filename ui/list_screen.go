@@ -58,6 +58,7 @@ type ListScreenSelectionWidget[T any] struct {
 	Value    T
 	Values   []T
 	Callback func(T)
+	ToString func(T) string
 }
 
 func (l ListScreenSelectionWidget[T]) abstand() float64 {
@@ -71,6 +72,7 @@ func (l ListScreenSelectionWidget[T]) createComponent(herderLegacy herderlegacy.
 		Value:    l.Value,
 		Values:   l.Values,
 		Callback: l.Callback,
+		ToString: l.ToString,
 	})
 }
 
@@ -105,12 +107,35 @@ type listScreen struct {
 }
 
 func NewListScreen(herderLegacy herderlegacy.HerderLegacy, config ListScreenConfig) herderlegacy.Screen {
+	const widgetStartY = 175.0
+
+	spalten := 1
+	widgetY := widgetStartY
+	for _, widget := range config.Widgets {
+		if widgetY+widget.abstand() >= Height {
+			spalten++
+			widgetY = widgetStartY + widget.abstand()
+			continue
+		}
+		widgetY += widget.abstand()
+	}
+
 	widgets := make([]Component, len(config.Widgets))
-	y := 175.0
-	for i, widget := range config.Widgets {
-		y += widget.abstand() / 2
-		widgets[i] = widget.createComponent(herderLegacy, NewCenteredPosition(Width/2, y))
-		y += widget.abstand() / 2
+	widgetIndex := 0
+	widgetY = widgetStartY
+spalten:
+	for spalte := 0; spalte < spalten; spalte++ {
+		widgetX := (Width / float64(spalten+1)) * float64(spalte+1)
+		for _, widget := range config.Widgets[widgetIndex:] {
+			if widgetY+widget.abstand() >= Height {
+				widgetY = widgetStartY
+				continue spalten
+			}
+			widgetY += widget.abstand() / 2
+			widgets[widgetIndex] = widget.createComponent(herderLegacy, NewCenteredPosition(widgetX, widgetY))
+			widgetY += widget.abstand() / 2
+			widgetIndex++
+		}
 	}
 
 	var cancelButton *Button
@@ -154,7 +179,11 @@ func NewListScreen(herderLegacy herderlegacy.HerderLegacy, config ListScreenConf
 }
 
 func (l *listScreen) components() []Component {
-	return append(l.widgets, l.title, l.text, l.cancelButton)
+	components := append(l.widgets, l.title, l.text)
+	if l.cancelButton != nil {
+		components = append(components, l.cancelButton)
+	}
+	return components
 }
 
 func (l *listScreen) Update() {

@@ -3,6 +3,7 @@ package poker
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
 	"github.com/Lama06/Herder-Legacy/ui"
@@ -89,12 +90,30 @@ func NewPokerRechnerScreen(
 						Text:         "Hinweis: Das Berechnen der Chancen kann etwas dauern.",
 						ContinueText: "Chancen berechnen",
 						ContinueAction: func() herderlegacy.Screen {
-							wahrscheinlichkeiten := handArtenWahrscheinlichkeitenBerechnen([2]karte(eigeneKarten), mittelKarten, abgelegteKarten)
+							start := time.Now()
+
+							eigeneHandMöglichkeiten :=
+								eigeneHandArtenMöglichkeitenBerechnen([2]karte(eigeneKarten), mittelKarten, abgelegteKarten)
+							eigeneHandWahrscheinlichkeiten := handArtenWahrscheinlichkeitenBerechnen(eigeneHandMöglichkeiten)
+
+							gegnerHandMöglichkeiten := gegnerHandArtenMöglichkeitenBerechnen([2]karte(eigeneKarten), mittelKarten, abgelegteKarten)
+							gegnerHandWahrscheinlichkeiten := handArtenWahrscheinlichkeitenBerechnen(gegnerHandMöglichkeiten)
+
+							benötigteZeit := time.Now().Sub(start)
+
 							var text strings.Builder
 							text.WriteString("Du hast folgende Chancen auf die Poker Kombinationen:")
-							for handArt := handArtHöchsteKarte; handArt < handArtVierling; handArt++ {
-								text.WriteString(fmt.Sprintf("\n%v: %v%%", handArt, wahrscheinlichkeiten[handArt]*100))
+							for handArt := handArtHöchsteKarte; handArt <= handArtRoyalFlush; handArt++ {
+								text.WriteString(fmt.Sprintf("\n%v: %v%% (%v Möglichkeiten)",
+									handArt, eigeneHandWahrscheinlichkeiten[handArt]*100, eigeneHandMöglichkeiten[handArt]))
 							}
+							text.WriteString("\n\nDeine Gegner haben (aus deiner Sicht) folgende Chancen auf die Poker Kombinationen:")
+							for handArt := handArtHöchsteKarte; handArt <= handArtRoyalFlush; handArt++ {
+								text.WriteString(fmt.Sprintf("\n%v: %v%% (%v Möglichkeiten)",
+									handArt, gegnerHandWahrscheinlichkeiten[handArt]*100, gegnerHandMöglichkeiten[handArt]))
+							}
+							text.WriteString(fmt.Sprintf("\n\nBenötigte Sekunden zum Berechnen: %v", benötigteZeit.Seconds()))
+
 							return ui.NewMessageScreen(herderLegacy, ui.MessageScreenConfig{
 								Title:        "Chancen",
 								Text:         text.String(),
@@ -136,7 +155,7 @@ func newKartenAuswahlScreen(
 	}
 
 	widgets = append(widgets, ui.ListScreenButtonWidget{
-		Text: "Hinzufügen +",
+		Text: "Hinzufügen",
 		Callback: func() {
 			ausgewähltesSymbol := symbolKreuz
 			ausgewählterWert := wert2
@@ -154,9 +173,10 @@ func newKartenAuswahlScreen(
 						},
 					},
 					ui.ListScreenSelectionWidget[wert]{
-						Text:   "Wert",
-						Value:  ausgewählterWert,
-						Values: []wert{wert2, wert3, wert4, wert5, wert6, wert7, wert8, wert9, wert10, wertBube, wertDame, wertKönig, wertAss},
+						Text:  "Wert",
+						Value: ausgewählterWert,
+						Values: []wert{wert2, wert3, wert4, wert5, wert6, wert7, wert8, wert9, wert10,
+							wertBube, wertDame, wertKönig, wertAss},
 						Callback: func(neuerWert wert) {
 							ausgewählterWert = neuerWert
 						},
@@ -186,11 +206,11 @@ func newKartenAuswahlScreen(
 	})
 }
 
-func handArtenWahrscheinlichkeitenBerechnen(
+func eigeneHandArtenMöglichkeitenBerechnen(
 	eigeneKarten [2]karte,
 	mittelkarten []karte,
 	abgelegteKarten []karte,
-) map[handArt]float64 {
+) map[handArt]int {
 	stapel := vollständigerKartenStapel.clone()
 	delete(stapel, eigeneKarten[0])
 	delete(stapel, eigeneKarten[1])
@@ -226,7 +246,44 @@ func handArtenWahrscheinlichkeitenBerechnen(
 	default:
 		panic("Es gibt immer 3, 4 oder 5 Mittelkarten")
 	}
+	return anzahlenMöglicherHandArten
+}
 
+func gegnerHandArtenMöglichkeitenBerechnen(
+	eigeneKarten [2]karte,
+	mittelkarten []karte,
+	abgelegteKarten []karte,
+) map[handArt]int {
+	stapel := vollständigerKartenStapel.clone()
+	delete(stapel, eigeneKarten[0])
+	delete(stapel, eigeneKarten[1])
+	for _, mittelkarte := range mittelkarten {
+		delete(stapel, mittelkarte)
+	}
+	for _, abgelegteKarte := range abgelegteKarten {
+		delete(stapel, abgelegteKarte)
+	}
+
+	anzahlenMöglicherHandArten := make(map[handArt]int)
+	for _, gegnerKarte1 := range stapel.karten() {
+		delete(stapel, gegnerKarte1)
+		for _, gegnerKarte2 := range stapel.karten() {
+			for handArt, anzahlMöglichkeiten := range eigeneHandArtenMöglichkeitenBerechnen(
+				[2]karte{gegnerKarte1, gegnerKarte2},
+				mittelkarten,
+				append(abgelegteKarten, eigeneKarten[0], eigeneKarten[1]),
+			) {
+				anzahlenMöglicherHandArten[handArt] += anzahlMöglichkeiten
+			}
+		}
+		stapel[gegnerKarte1] = struct{}{}
+	}
+	return anzahlenMöglicherHandArten
+}
+
+func handArtenWahrscheinlichkeitenBerechnen(
+	anzahlenMöglicherHandArten map[handArt]int,
+) map[handArt]float64 {
 	var anzahlMöglichkeitenGesamt int
 	for _, anzahlMöglichkeitenFürHandArt := range anzahlenMöglicherHandArten {
 		anzahlMöglichkeitenGesamt += anzahlMöglichkeitenFürHandArt

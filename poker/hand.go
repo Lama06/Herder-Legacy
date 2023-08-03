@@ -61,9 +61,8 @@ const (
 	handArtFlush
 	handArtFullHouse
 	handArtVierling
-	// TODO:
-	// handArtStraightFlush
-	// handArtRoyalFlush
+	handArtStraightFlush
+	handArtRoyalFlush
 )
 
 func (h handArt) parser() handParser {
@@ -84,6 +83,10 @@ func (h handArt) parser() handParser {
 		return parseFullHouseHand
 	case handArtVierling:
 		return parseVierlingHand
+	case handArtStraightFlush:
+		return parseStraightFlushHand
+	case handArtRoyalFlush:
+		return parseRoyalFlush
 	default:
 		panic("unreachable")
 	}
@@ -107,6 +110,10 @@ func (h handArt) String() string {
 		return "Full House"
 	case handArtVierling:
 		return "Vierling"
+	case handArtStraightFlush:
+		return "Straight Flush"
+	case handArtRoyalFlush:
+		return "Royal Flush"
 	default:
 		panic("unreachable")
 	}
@@ -126,7 +133,7 @@ type handParser func([7]karte) hand
 
 func parseHand(karten [7]karte) hand {
 	kartenNachWertSortieren(karten[:])
-	for art := handArtVierling; art >= handArtHöchsteKarte; art-- {
+	for art := handArtRoyalFlush; art >= handArtHöchsteKarte; art-- {
 		if hand := art.parser()(karten); hand != nil {
 			return hand
 		}
@@ -484,4 +491,82 @@ func (v vierlingHand) visualisierung(karte karte) color.Color {
 	default:
 		return nil
 	}
+}
+
+type straightFlushHand [5]karte
+
+func parseStraightFlushHand(karten [7]karte) hand {
+	straße := parseStraßeHand(karten)
+	if straße == nil {
+		return nil
+	}
+
+	var gleichesSymbol symbol
+	for i, karte := range straße.(straßeHand) {
+		if i == 0 {
+			gleichesSymbol = karte.symbol
+			continue
+		}
+
+		if karte.symbol != gleichesSymbol {
+			return nil
+		}
+	}
+
+	return straightFlushHand(straße.(straßeHand))
+}
+
+func (s straightFlushHand) art() handArt {
+	return handArtStraightFlush
+}
+
+func (s straightFlushHand) karten() [5]karte {
+	return s
+}
+
+func (s straightFlushHand) displayName() string {
+	return "Straight Flush"
+}
+
+func (s straightFlushHand) visualisierung(karte karte) color.Color {
+	switch karte {
+	case s[0]:
+		return colornames.Gold
+	case s[1], s[2], s[3], s[4]:
+		return colornames.Silver
+	default:
+		return nil
+	}
+}
+
+type royalFlush symbol
+
+func parseRoyalFlush(karten [7]karte) hand {
+	straightFlush := parseStraightFlushHand(karten)
+	if straightFlush == nil || straightFlush.(straightFlushHand)[0].wert != wertAss {
+		return nil
+	}
+	return royalFlush(straightFlush.(straightFlushHand)[0].symbol)
+}
+
+func (r royalFlush) art() handArt {
+	return handArtRoyalFlush
+}
+
+func (r royalFlush) karten() [5]karte {
+	return [5]karte{
+		{symbol: symbol(r), wert: wertAss},
+		{symbol: symbol(r), wert: wertKönig},
+		{symbol: symbol(r), wert: wertDame},
+		{symbol: symbol(r), wert: wertBube},
+		{symbol: symbol(r), wert: wert10},
+	}
+}
+
+func (r royalFlush) displayName() string {
+	return "Roayal Flush"
+}
+
+func (r royalFlush) visualisierung(karte karte) color.Color {
+	return colornames.Gold
 }
