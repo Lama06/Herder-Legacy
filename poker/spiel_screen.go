@@ -9,6 +9,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 func istKlick() bool {
@@ -28,6 +29,7 @@ const (
 	spielStatus4AufgedeckteMittelkarten
 	spielStatusFünfteKarteWirdGezogen
 	spielStatus5AufgedeckteMittelkarten
+	spielStatusKartenWerdenAufgedeckt
 	spielStatusSiegerermittlung
 )
 
@@ -77,18 +79,27 @@ func spielScreenGegnerKarteY(karteIndex int) float64 {
 }
 
 type spielScreen struct {
-	status              spielScreenStatus
-	info                *ui.Title
-	stapel              kartenStapel
-	eigeneKarten        [spielScreenAnzahlEigenerKarten]*spielScreenKarte
-	linkerGegnerKarten  [spielScreenAnzahlGegnerKarten]*spielScreenKarte
-	rechterGegnerKarten [spielScreenAnzahlGegnerKarten]*spielScreenKarte
-	mittelkarten        [spielScreenAnzahlMittelkarten]*spielScreenKarte
+	status spielScreenStatus
+	info   *ui.Title
+
+	eigeneKarten          [2]karte
+	eigeneBewegendeKarten [2]*spielScreenBewegendeKarte
+
+	linkerGegnerKarten          [2]karte
+	linkerGegnerBewegendeKarten [2]*spielScreenBewegendeKarte
+
+	rechterGegnerKarten          [2]karte
+	rechterGegnerBewegendeKarten [2]*spielScreenBewegendeKarte
+
+	mittelkarten          [5]karte
+	bewegendeMittelkarten [5]*spielScreenBewegendeKarte
 }
 
 var _ herderlegacy.Screen = (*spielScreen)(nil)
 
-func NewSpielScreen() *spielScreen {
+func NewSpielScreen() herderlegacy.Screen {
+	stapel := vollständigerKartenStapel.clone()
+
 	return &spielScreen{
 		status: spielStatusKartenAnfang,
 		info: ui.NewTitle(ui.TitleConfig{
@@ -97,25 +108,58 @@ func NewSpielScreen() *spielScreen {
 			CustomColorPalette: false,
 			ColorPalette:       ui.TitleColorPalette{},
 		}),
-		stapel: vollständigerKartenStapel.clone(),
+
+		eigeneKarten:        [2]karte{stapel.karteZiehen(), stapel.karteZiehen()},
+		linkerGegnerKarten:  [2]karte{stapel.karteZiehen(), stapel.karteZiehen()},
+		rechterGegnerKarten: [2]karte{stapel.karteZiehen(), stapel.karteZiehen()},
+		mittelkarten:        [5]karte{stapel.karteZiehen(), stapel.karteZiehen(), stapel.karteZiehen(), stapel.karteZiehen(), stapel.karteZiehen()},
 	}
+}
+
+func (s *spielScreen) bewegendeKarten() []*spielScreenBewegendeKarte {
+	return append(
+		s.bewegendeMittelkarten[:],
+		s.eigeneBewegendeKarten[0], s.eigeneBewegendeKarten[1],
+		s.linkerGegnerBewegendeKarten[0], s.linkerGegnerBewegendeKarten[1],
+		s.rechterGegnerBewegendeKarten[0], s.rechterGegnerBewegendeKarten[1],
+	)
 }
 
 func (s *spielScreen) components() []ui.Component {
 	components := []ui.Component{s.info}
-	for _, eigeneKarte := range s.eigeneKarten {
-		components = append(components, eigeneKarte)
-	}
-	for _, lingerGegnerKarte := range s.linkerGegnerKarten {
-		components = append(components, lingerGegnerKarte)
-	}
-	for _, rechterGegnerKarte := range s.rechterGegnerKarten {
-		components = append(components, rechterGegnerKarte)
-	}
-	for _, mittelkarte := range s.mittelkarten {
-		components = append(components, mittelkarte)
+	for _, bewegendeKarte := range s.bewegendeKarten() {
+		components = append(components, bewegendeKarte)
 	}
 	return components
+}
+
+func (s *spielScreen) menschHand() hand {
+	return parseHand([7]karte(append(s.mittelkarten[:], s.eigeneKarten[:]...)))
+}
+
+func (s *spielScreen) linksHand() hand {
+	return parseHand([7]karte(append(s.mittelkarten[:], s.linkerGegnerKarten[:]...)))
+}
+
+func (s *spielScreen) rechtsHand() hand {
+	return parseHand([7]karte(append(s.mittelkarten[:], s.rechterGegnerKarten[:]...)))
+}
+
+func (s *spielScreen) gewinner() (mensch, links, rechts bool) {
+	menschHand := s.menschHand()
+	linksHand := s.linksHand()
+	rechtsHand := s.rechtsHand()
+
+	switch {
+	case compareHände(linksHand, menschHand) == -1 && compareHände(rechtsHand, menschHand) == -1:
+		return true, false, false
+	default:
+		fallthrough
+	case compareHände(rechtsHand, linksHand) == -1 && compareHände(menschHand, linksHand) == -1:
+		return false, true, false
+	case compareHände(linksHand, rechtsHand) == -1 && compareHände(menschHand, rechtsHand) == -1:
+		return false, false, true
+	}
 }
 
 func (s *spielScreen) Update() {
@@ -131,54 +175,54 @@ func (s *spielScreen) Update() {
 
 		s.status = spielStatusKartenWerdenGezogen
 		s.info.SetText("")
-		for i := range s.eigeneKarten {
-			s.eigeneKarten[i] = &spielScreenKarte{
+		for i, karte := range s.eigeneKarten {
+			s.eigeneBewegendeKarten[i] = &spielScreenBewegendeKarte{
 				currentX:      spielScreenStapelX,
 				currentY:      spielScreenStapelY,
 				targetX:       spielScreenEigeneKarteX(i),
 				targetY:       spielScreenEigeneKartenY,
 				autoAufdecken: true,
-				karte:         s.stapel.karteZiehen(),
+				karte:         karte,
 			}
 		}
-		for i := range s.linkerGegnerKarten {
-			s.linkerGegnerKarten[i] = &spielScreenKarte{
+		for i, karte := range s.linkerGegnerKarten {
+			s.linkerGegnerBewegendeKarten[i] = &spielScreenBewegendeKarte{
 				targetRotation: spielScreenGegnerKartenRotation,
 				currentX:       spielScreenStapelX,
 				currentY:       spielScreenStapelY,
 				targetX:        spielScreenLinkerGegnerKartenX,
 				targetY:        spielScreenGegnerKarteY(i),
-				karte:          s.stapel.karteZiehen(),
+				karte:          karte,
 			}
 		}
-		for i := range s.rechterGegnerKarten {
-			s.rechterGegnerKarten[i] = &spielScreenKarte{
+		for i, karte := range s.rechterGegnerKarten {
+			s.rechterGegnerBewegendeKarten[i] = &spielScreenBewegendeKarte{
 				targetRotation: spielScreenGegnerKartenRotation,
 				currentX:       spielScreenStapelX,
 				currentY:       spielScreenStapelY,
 				targetX:        spielScreenRechterGegnerKartenX,
 				targetY:        spielScreenGegnerKarteY(i),
-				karte:          s.stapel.karteZiehen(),
+				karte:          karte,
 			}
 		}
 		for i := 0; i < 3; i++ {
-			s.mittelkarten[i] = &spielScreenKarte{
+			s.bewegendeMittelkarten[i] = &spielScreenBewegendeKarte{
 				currentX: spielScreenStapelX,
 				currentY: spielScreenStapelY,
 				targetX:  spielScreenMittelKarteX(i),
 				targetY:  spielScreenMittelKartenY,
-				karte:    s.stapel.karteZiehen(),
+				karte:    s.mittelkarten[i],
 			}
 		}
 	case spielStatusKartenWerdenGezogen:
-		for _, eigeneKarte := range s.eigeneKarten {
-			if !eigeneKarte.angekommen() {
+		for _, eigeneKarte := range s.eigeneBewegendeKarten {
+			if !eigeneKarte.animationBeendet() {
 				return
 			}
 		}
 
-		for _, mittelKarte := range s.mittelkarten {
-			if mittelKarte != nil && !mittelKarte.angekommen() {
+		for _, mittelKarte := range s.bewegendeMittelkarten {
+			if mittelKarte != nil && !mittelKarte.animationBeendet() {
 				return
 			}
 		}
@@ -191,11 +235,11 @@ func (s *spielScreen) Update() {
 
 		s.status = spielStatusMittelkartenWerdenAufgedeckt
 		for i := 0; i < 3; i++ {
-			s.mittelkarten[i].targetAufgedecktStatus = true
+			s.bewegendeMittelkarten[i].targetAufgedecktStatus = true
 		}
 	case spielStatusMittelkartenWerdenAufgedeckt:
 		for i := 0; i < 3; i++ {
-			if !s.mittelkarten[i].fertigGewendet() {
+			if !s.bewegendeMittelkarten[i].animationBeendet() {
 				return
 			}
 		}
@@ -207,16 +251,16 @@ func (s *spielScreen) Update() {
 		}
 
 		s.status = spielStatusVierteKarteWirdGezogen
-		s.mittelkarten[3] = &spielScreenKarte{
+		s.bewegendeMittelkarten[3] = &spielScreenBewegendeKarte{
 			currentX:      spielScreenStapelX,
 			currentY:      spielScreenStapelY,
 			targetX:       spielScreenMittelKarteX(3),
 			targetY:       spielScreenMittelKartenY,
-			karte:         s.stapel.karteZiehen(),
+			karte:         s.mittelkarten[3],
 			autoAufdecken: true,
 		}
 	case spielStatusVierteKarteWirdGezogen:
-		if !s.mittelkarten[3].fertigGewendet() {
+		if !s.bewegendeMittelkarten[3].animationBeendet() {
 			return
 		}
 
@@ -227,23 +271,75 @@ func (s *spielScreen) Update() {
 		}
 
 		s.status = spielStatusFünfteKarteWirdGezogen
-		s.mittelkarten[4] = &spielScreenKarte{
+		s.bewegendeMittelkarten[4] = &spielScreenBewegendeKarte{
 			currentX:      spielScreenStapelX,
 			currentY:      spielScreenStapelY,
 			targetX:       spielScreenMittelKarteX(4),
 			targetY:       spielScreenMittelKartenY,
-			karte:         s.stapel.karteZiehen(),
+			karte:         s.mittelkarten[4],
 			autoAufdecken: true,
 		}
 	case spielStatusFünfteKarteWirdGezogen:
-		if !s.mittelkarten[4].fertigGewendet() {
+		if !s.bewegendeMittelkarten[4].animationBeendet() {
 			return
 		}
 
 		s.status = spielStatus5AufgedeckteMittelkarten
 	case spielStatus5AufgedeckteMittelkarten:
+		if !istKlick() {
+			return
+		}
 
+		for _, linkerGegnerKarte := range s.linkerGegnerBewegendeKarten {
+			linkerGegnerKarte.targetAufgedecktStatus = true
+		}
+		for _, rechterGegnerKarte := range s.rechterGegnerBewegendeKarten {
+			rechterGegnerKarte.targetAufgedecktStatus = true
+		}
+
+		s.status = spielStatusKartenWerdenAufgedeckt
+	case spielStatusKartenWerdenAufgedeckt:
+		for _, linkerGegnerKarte := range s.linkerGegnerBewegendeKarten {
+			if !linkerGegnerKarte.animationBeendet() {
+				return
+			}
+		}
+		for _, rechterGegnerKarte := range s.rechterGegnerBewegendeKarten {
+			if !rechterGegnerKarte.animationBeendet() {
+				return
+			}
+		}
+
+		s.status = spielStatusSiegerermittlung
 	case spielStatusSiegerermittlung:
+		var gewinnerHand hand
+		menschGewonnen, linksGewonnen, rechtsGewonnen := s.gewinner()
+		switch {
+		case menschGewonnen:
+			gewinnerHand = s.menschHand()
+		case linksGewonnen:
+			gewinnerHand = s.linksHand()
+		case rechtsGewonnen:
+			gewinnerHand = s.rechtsHand()
+		}
+
+		s.info.SetText(gewinnerHand.displayName())
+
+		for _, karte := range gewinnerHand.karten() {
+			if gewinnerHand.visualisierung(karte) == nil {
+				continue
+			}
+
+			for _, bewegendeKarte := range s.bewegendeKarten() {
+				if bewegendeKarte.karte != karte {
+					continue
+				}
+
+				bewegendeKarte.hatUmrandung = true
+				bewegendeKarte.umrandungsFarbe = gewinnerHand.visualisierung(karte)
+				break
+			}
+		}
 	}
 }
 
@@ -265,8 +361,11 @@ func (s *spielScreen) Draw(screen *ebiten.Image) {
 	}
 }
 
-type spielScreenKarte struct {
+type spielScreenBewegendeKarte struct {
 	karte karte
+
+	hatUmrandung    bool
+	umrandungsFarbe color.Color
 
 	currentRotation float64
 	targetRotation  float64
@@ -279,9 +378,9 @@ type spielScreenKarte struct {
 	autoAufdecken             bool
 }
 
-var _ ui.Component = (*spielScreenKarte)(nil)
+var _ ui.Component = (*spielScreenBewegendeKarte)(nil)
 
-func (s *spielScreenKarte) Update() {
+func (s *spielScreenBewegendeKarte) Update() {
 	if s == nil {
 		return
 	}
@@ -303,14 +402,18 @@ func (s *spielScreenKarte) Update() {
 	}
 }
 
-func (s *spielScreenKarte) angekommen() bool {
+func (s *spielScreenBewegendeKarte) angekommen() bool {
 	const tolerance = 0.00001
 	return math.Abs(s.currentX-s.targetX) <= tolerance &&
 		math.Abs(s.currentY-s.targetY) <= tolerance &&
 		math.Abs(s.currentRotation-s.targetRotation) <= tolerance
 }
 
-func (s *spielScreenKarte) fertigGewendet() bool {
+func (s *spielScreenBewegendeKarte) animationBeendet() bool {
+	if s.autoAufdecken && !s.angekommen() {
+		return false
+	}
+
 	const tolerance = 0.00001
 	if s.targetAufgedecktStatus {
 		return math.Abs(s.currentAufgedecktProgress-1) <= tolerance
@@ -319,7 +422,7 @@ func (s *spielScreenKarte) fertigGewendet() bool {
 	}
 }
 
-func (s *spielScreenKarte) Draw(screen *ebiten.Image) {
+func (s *spielScreenBewegendeKarte) Draw(screen *ebiten.Image) {
 	if s == nil {
 		return
 	}
@@ -329,17 +432,33 @@ func (s *spielScreenKarte) Draw(screen *ebiten.Image) {
 		bild = s.karte.image()
 	}
 
-	var drawOptions ebiten.DrawImageOptions
+	var geoM ebiten.GeoM
 
 	scaleX := spielScreenKarteBreite / float64(bild.Bounds().Dx())
 	scaleY := spielScreenKarteHöhe / float64(bild.Bounds().Dy())
 
 	umdrehenScaleX := math.Abs(s.currentAufgedecktProgress-0.5) / 0.5
 
-	drawOptions.GeoM.Rotate(s.currentRotation)
-	drawOptions.GeoM.Scale(umdrehenScaleX, 1)
-	drawOptions.GeoM.Scale(scaleX, scaleY)
-	drawOptions.GeoM.Translate(((1-umdrehenScaleX)/2)*spielScreenKarteBreite, 0)
-	drawOptions.GeoM.Translate(s.currentX, s.currentY)
-	screen.DrawImage(bild, &drawOptions)
+	geoM.Scale(umdrehenScaleX, 1)
+	geoM.Scale(scaleX, scaleY)
+	geoM.Translate(((1-umdrehenScaleX)/2)*spielScreenKarteBreite, 0)
+	geoM.Rotate(s.currentRotation)
+	geoM.Translate(s.currentX, s.currentY)
+
+	screen.DrawImage(bild, &ebiten.DrawImageOptions{GeoM: geoM})
+	if s.hatUmrandung {
+		x, y := geoM.Apply(0, 0)
+		untenRechtsX, untenRechtsY := geoM.Apply(float64(bild.Bounds().Dx()), float64(bild.Bounds().Dy()))
+		width, height := untenRechtsX-x, untenRechtsY-y
+		vector.StrokeRect(
+			screen,
+			float32(x),
+			float32(y),
+			float32(width),
+			float32(height),
+			12,
+			s.umrandungsFarbe,
+			true,
+		)
+	}
 }

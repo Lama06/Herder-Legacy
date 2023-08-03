@@ -272,7 +272,7 @@ func (z zweiPaareHand) karten() [5]karte {
 }
 
 func (z zweiPaareHand) displayName() string {
-	return "Zwei Paare: " + z.paar1[0].wert.String() + " und " + z.paar2[0].String()
+	return "Zwei Paare: " + z.paar1[0].wert.String() + " und " + z.paar2[0].wert.String()
 }
 
 func (z zweiPaareHand) visualisierung(karte karte) color.Color {
