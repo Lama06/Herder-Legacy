@@ -137,7 +137,7 @@ func main() {
 				)
 			}),
 			dialog.NewAntwort("Poker", func() herderlegacy.Screen {
-				return poker.NewSpielScreen()
+				return poker.NewSpielScreen(&herderLegacy)
 			}),
 			dialog.NewAntwort("Poker Rechner", func() herderlegacy.Screen {
 				return poker.NewPokerRechnerScreen(&herderLegacy, newMenuScreen)
