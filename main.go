@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "image/jpeg"
 	_ "image/png"
 	"runtime"
@@ -137,7 +138,10 @@ func main() {
 				)
 			}),
 			dialog.NewAntwort("Poker", func() herderlegacy.Screen {
-				return poker.NewSpielScreen(&herderLegacy)
+				return poker.NewSpielScreen(&herderLegacy, 20, func(jettons int) herderlegacy.Screen {
+					fmt.Println(jettons)
+					return newMenuScreen()
+				})
 			}),
 			dialog.NewAntwort("Poker Rechner", func() herderlegacy.Screen {
 				return poker.NewPokerRechnerScreen(&herderLegacy, newMenuScreen)

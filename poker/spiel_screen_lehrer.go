@@ -111,31 +111,32 @@ func (s *spielScreenLehrer) einsatzErmitteln(
 	wirdGewinnen bool,
 	callback func(einsatz int),
 ) {
-	if status == spielStatusVerdeckteMittelkarten {
-		callback(1) // Einer geht immer :)
-		return
-	}
-
+	var einsatz int
 	strategieZufallszahl := rand.Float64()
 	switch {
+	case status == spielStatusVerdeckteMittelkarten:
+		einsatz = 1 // Einer geht immer :)
 	case (strategieZufallszahl < 0.25) || (strategieZufallszahl >= 0.5 && !wirdGewinnen):
-		callback(1)
+		einsatz = 1
 	case strategieZufallszahl >= 0.5 && wirdGewinnen:
 		switch status {
 		case spielStatus3AufgedeckteMittelKarten:
-			callback(1)
+			einsatz = 1 + rand.Intn(2)
 		case spielStatus4AufgedeckteMittelkarten:
-			callback(2)
+			einsatz = 2 + rand.Intn(3)
 		case spielStatus5AufgedeckteMittelkarten:
-			callback(3)
+			einsatz = 4 + rand.Intn(3)
 		default:
 			panic("unbekannter Spielstatus")
 		}
 	case strategieZufallszahl >= 0.25 && strategieZufallszahl < 0.5:
-		callback(10)
+		einsatz = 8 + rand.Intn(7)
 	default:
 		panic("unreachable")
 	}
+
+	s.eigenerEinsatz += einsatz
+	callback(einsatz)
 }
 
 func (s *spielScreenLehrer) gehtMit(
@@ -144,5 +145,9 @@ func (s *spielScreenLehrer) gehtMit(
 	callback func(gehtMit bool),
 ) {
 	schmerzgrenze := maxInt(3, s.eigenerEinsatz)
-	callback(schmerzgrenze >= einsatz)
+	entscheidung := schmerzgrenze >= einsatz
+	if entscheidung {
+		s.eigenerEinsatz += einsatz
+	}
+	callback(entscheidung)
 }

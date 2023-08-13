@@ -118,6 +118,7 @@ func (s *spielScreenMensch) einsatzErmitteln(
 		0,
 		s.jettons,
 		func(einsatz int) herderlegacy.Screen {
+			s.jettons -= einsatz
 			callback(einsatz)
 			return previousScreen
 		},
@@ -144,6 +145,7 @@ func (s *spielScreenMensch) gehtMit(
 			ui.ListScreenButtonWidget{
 				Text: "Mitgehen",
 				Callback: func() {
+					s.jettons = maxInt(0, s.jettons-einsatz)
 					callback(true)
 					herderLegacy.OpenScreen(previousScreen)
 				},

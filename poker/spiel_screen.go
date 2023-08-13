@@ -1,6 +1,7 @@
 package poker
 
 import (
+	"fmt"
 	"image/color"
 	"math/rand"
 
@@ -9,11 +10,13 @@ import (
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"golang.org/x/image/colornames"
 )
 
 func istKlick() bool {
 	return inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) ||
-		len(inpututil.AppendJustReleasedTouchIDs(nil)) != 0
+		len(inpututil.AppendJustReleasedTouchIDs(nil)) != 0 ||
+		inpututil.IsKeyJustReleased(ebiten.KeySpace)
 }
 
 type spielScreenStatus int
@@ -29,7 +32,7 @@ const (
 	spielStatusFünfteKarteWirdGezogen
 	spielStatus5AufgedeckteMittelkarten
 	spielStatusKartenWerdenAufgedeckt
-	spielStatusSiegerermittlung
+	spielStatusSiegerAuswertung
 )
 
 func (s spielScreenStatus) werSetztZuerst(spieler []spielScreenSpieler) spielScreenSpieler {
@@ -96,29 +99,35 @@ type spielScreenSpieler interface {
 
 type spielScreen struct {
 	herderLegacy herderlegacy.HerderLegacy
+	callback     func(jettons int) herderlegacy.Screen
 
-	status spielScreenStatus
-	info   *ui.Title
+	status       spielScreenStatus
+	spieler      []spielScreenSpieler
+	mensch       *spielScreenMensch
+	stapel       kartenStapel
+	mittelkarten [5]karte
 
-	spieler []spielScreenSpieler
-
-	stapel kartenStapel
-
-	bewegendeJettons []*spielScreenBewegenderJetton
-
-	mittelkarten          [5]karte
 	bewegendeMittelkarten [5]*spielScreenBewegendeKarte
+	bewegendeJettons      []*spielScreenBewegenderJetton
+	info                  *ui.Title
+	jetonsAnzeige         *ui.Text
+	aufgebenKnopf         *ui.Button
 }
 
 var _ herderlegacy.Screen = (*spielScreen)(nil)
 
-func NewSpielScreen(herderLegacy herderlegacy.HerderLegacy) herderlegacy.Screen {
+func NewSpielScreen(
+	herderLegacy herderlegacy.HerderLegacy,
+	jettons int,
+	callback func(jettons int) herderlegacy.Screen,
+) herderlegacy.Screen {
 	stapel := vollständigerKartenStapel.clone()
 
+	mensch := newSpielScreenMensch(jettons)
 	spieler := []spielScreenSpieler{
 		newSpielScreenLehrer(spielScreenLehrerPositionLinks),
 		newSpielScreenLehrer(spielScreenLehrerPositionRechts),
-		newSpielScreenMensch(30),
+		mensch,
 	}
 	rand.Shuffle(len(spieler), func(i, j int) {
 		spieler[i], spieler[j] = spieler[j], spieler[i]
@@ -126,17 +135,52 @@ func NewSpielScreen(herderLegacy herderlegacy.HerderLegacy) herderlegacy.Screen 
 
 	return &spielScreen{
 		herderLegacy: herderLegacy,
+		callback:     callback,
 
-		status: spielStatusKartenAnfang,
+		status:  spielStatusKartenAnfang,
+		spieler: spieler,
+		mensch:  mensch,
+		stapel:  stapel,
+		mittelkarten: [5]karte{
+			stapel.karteZiehen(),
+			stapel.karteZiehen(),
+			stapel.karteZiehen(),
+			stapel.karteZiehen(),
+			stapel.karteZiehen(),
+		},
+
 		info: ui.NewTitle(ui.TitleConfig{
 			Position:           ui.NewCenteredPosition(ui.Width/2, ui.Height/3),
 			Text:               "Klicken um Karten zu ziehen",
 			CustomColorPalette: false,
 			ColorPalette:       ui.TitleColorPalette{},
 		}),
-		spieler:      spieler,
-		stapel:       stapel,
-		mittelkarten: [5]karte{stapel.karteZiehen(), stapel.karteZiehen(), stapel.karteZiehen(), stapel.karteZiehen(), stapel.karteZiehen()},
+		jetonsAnzeige: ui.NewText(ui.TextConfig{
+			Position: ui.Position{
+				X:                20,
+				Y:                ui.Height - 20,
+				AnchorHorizontal: ui.HorizontalerAnchorLinks,
+				AnchorVertikal:   ui.VertikalerAnchorUnten,
+			},
+			CustomColorPalette: true,
+			ColorPalette: ui.TextColorPalatte{
+				Color: colornames.Whitesmoke,
+			},
+		}),
+		aufgebenKnopf: ui.NewButton(ui.ButtonConfig{
+			Position: ui.Position{
+				X:                ui.Width - 20,
+				Y:                ui.Height - 20,
+				AnchorHorizontal: ui.HorizontalerAnchorRechts,
+				AnchorVertikal:   ui.VertikalerAnchorUnten,
+			},
+			Text: "Kasino verlassen",
+			Callback: func() {
+				herderLegacy.OpenScreen(callback(mensch.jettons))
+			},
+			CustomColorPalette: true,
+			ColorPalette:       ui.CancelButtonColorPalette,
+		}),
 	}
 }
 
@@ -157,7 +201,7 @@ func (s *spielScreen) components() []ui.Component {
 	for _, bewegenderJetton := range s.bewegendeJettons {
 		components = append(components, bewegenderJetton)
 	}
-	components = append(components, s.info)
+	components = append(components, s.info, s.aufgebenKnopf, s.jetonsAnzeige)
 	return components
 }
 
@@ -176,10 +220,13 @@ func (s *spielScreen) spielerHand(spieler spielScreenSpieler) hand {
 func (s *spielScreen) gewinner() spielScreenSpieler {
 gewinnerKanidaten:
 	for _, gewinnerKanidat := range s.spieler {
+		if gewinnerKanidat.hatAufgegeben() {
+			continue
+		}
 		gewinnerKanidatHand := s.spielerHand(gewinnerKanidat)
 
 		for _, gegner := range s.spieler {
-			if gewinnerKanidat == gegner {
+			if gewinnerKanidat == gegner || gegner.hatAufgegeben() {
 				continue
 			}
 
@@ -256,6 +303,8 @@ func (s *spielScreen) einsätzeErmitteln(status spielScreenStatus, callback func
 }
 
 func (s *spielScreen) Update() {
+	s.jetonsAnzeige.SetText(fmt.Sprintf("%v Jetons", s.mensch.jettons))
+
 	for _, component := range s.components() {
 		component.Update()
 	}
@@ -371,9 +420,14 @@ func (s *spielScreen) Update() {
 			}
 		}
 
-		s.status = spielStatusSiegerermittlung
-	case spielStatusSiegerermittlung:
+		s.status = spielStatusSiegerAuswertung
+
 		gewinner := s.gewinner()
+
+		if gewinner == s.mensch {
+			s.mensch.jettons += len(s.bewegendeJettons)
+		}
+
 		gewinnerHand := s.spielerHand(gewinner)
 
 		s.info.SetText(gewinnerHand.displayName())
@@ -393,6 +447,16 @@ func (s *spielScreen) Update() {
 				break
 			}
 		}
+	case spielStatusSiegerAuswertung:
+		if !istKlick() {
+			return
+		}
+
+		if s.mensch.jettons == 0 {
+			s.herderLegacy.OpenScreen(s.callback(0))
+			return
+		}
+		s.herderLegacy.OpenScreen(NewSpielScreen(s.herderLegacy, s.mensch.jettons, s.callback))
 	}
 }
 
