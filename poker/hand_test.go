@@ -1,6 +1,8 @@
 package poker
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestParseHand(t *testing.T) {
 	testCases := map[string]struct {
