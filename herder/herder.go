@@ -46,7 +46,7 @@ func CreateHerder(herderLegacy herderlegacy.HerderLegacy) *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image: assets.RequireImage("tisch.png"),
+			Image: assets.RequireImage("einrichtung/tisch/vorne/standard.png"),
 			Scale: 1,
 		},
 		HatRendererHitboxComponent: true,
@@ -73,8 +73,8 @@ func CreateHerder(herderLegacy herderlegacy.HerderLegacy) *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image:    assets.RequireImage("tisch.png"),
-			Scale:    2,
+			Image:    assets.RequireImage("einrichtung/tisch/vorne/standard.png"),
+			Scale:    1,
 			Rotation: math.Pi / 4,
 		},
 		HatRendererHitboxComponent: true,
@@ -110,7 +110,7 @@ func CreateHerder(herderLegacy herderlegacy.HerderLegacy) *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image: assets.RequireImage("tisch.png"),
+			Image: assets.RequireImage("einrichtung/tisch/vorne/standard.png"),
 			Scale: 1,
 		},
 		HatPortalComponent: true,
@@ -134,7 +134,7 @@ func CreateHerder(herderLegacy herderlegacy.HerderLegacy) *world.World {
 		},
 		HatImageRenderComponent: true,
 		ImageRenderComponent: world.ImageRenderComponent{
-			Image: assets.RequireImage("tisch.png"),
+			Image: assets.RequireImage("einrichtung/tisch/vorne/standard.png"),
 			Scale: 1,
 		},
 		HatPortalComponent: true,

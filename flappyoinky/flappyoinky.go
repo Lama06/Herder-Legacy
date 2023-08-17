@@ -111,7 +111,7 @@ const (
 )
 
 func createHindernisImage(breite, hoehe int) *ebiten.Image {
-	hindernisTileImg := assets.RequireImage("hindernis.png")
+	hindernisTileImg := assets.RequireImage("flappyoinky/hindernis.png")
 	hindernisTileScale := float64(breite) / float64(hindernisTileImg.Bounds().Dx())
 	hindernisTileScaledHoehe := float64(hindernisTileImg.Bounds().Dy()) * hindernisTileScale
 
@@ -238,7 +238,7 @@ func (o *oinky) targetRotation() float64 {
 }
 
 func (o *oinky) draw(screen *ebiten.Image) {
-	oinkyImg := assets.RequireImage("oinky.png")
+	oinkyImg := assets.RequireImage("flappyoinky/oinky.png")
 	var drawOptions ebiten.DrawImageOptions
 	drawOptions.GeoM.Scale(oinkySize/float64(oinkyImg.Bounds().Dx()), oinkySize/float64(oinkyImg.Bounds().Dy()))
 	drawOptions.GeoM.Rotate(o.rotation)

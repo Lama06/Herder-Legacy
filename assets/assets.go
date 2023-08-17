@@ -11,6 +11,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
 )
 
+//go:generate go run crop_images.go
+
 //go:embed fonts/*
 var fontsFS embed.FS
 

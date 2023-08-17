@@ -393,7 +393,7 @@ func (s straßeHand) visualisierung(karte karte) color.Color {
 type flushHand [5]karte
 
 func parseFlushHand(karten [7]karte) hand {
-	for s := symbolPik; s <= symbolKreuz; s++ {
+	for s := symbol(0); s < anzahlSymbole; s++ {
 		var anzahl int
 		for _, k := range karten {
 			if k.symbol != s {
