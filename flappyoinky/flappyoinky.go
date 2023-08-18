@@ -181,9 +181,11 @@ func (h *hindernis) draw(screen *ebiten.Image) {
 }
 
 const (
-	oinkySize                       = 100
-	oinkyX                          = ui.Width/2 - oinkySize/2
-	oinkyYStart                     = ui.Height/2 - oinkySize/2
+	oinkyFormat                     = 27.0 / 32.0
+	oinkyBreite                     = 100
+	oinkyHöhe                       = oinkyFormat * oinkyBreite
+	oinkyX                          = ui.Width/2 - oinkyBreite/2
+	oinkyYStart                     = ui.Height/2 - oinkyHöhe/2
 	oinkyYGeschwindigkeitNachSprung = -10
 	oinkyYGeschwindigkeitStart      = oinkyYGeschwindigkeitNachSprung * 2
 	oinkyBeschleunigungY            = 0.5
@@ -205,15 +207,15 @@ func newOinky() *oinky {
 }
 
 func (o *oinky) istWeg() bool {
-	return o.y > ui.Height || o.y+oinkySize < 0
+	return o.y > ui.Height || o.y+oinkyHöhe < 0
 }
 
 func (o *oinky) hitbox() aabb.Aabb {
 	return aabb.Aabb{
 		X:      oinkyX,
 		Y:      o.y,
-		Width:  oinkySize,
-		Height: oinkySize,
+		Width:  oinkyBreite,
+		Height: oinkyHöhe,
 	}
 }
 
@@ -240,7 +242,7 @@ func (o *oinky) targetRotation() float64 {
 func (o *oinky) draw(screen *ebiten.Image) {
 	oinkyImg := assets.RequireImage("flappyoinky/oinky.png")
 	var drawOptions ebiten.DrawImageOptions
-	drawOptions.GeoM.Scale(oinkySize/float64(oinkyImg.Bounds().Dx()), oinkySize/float64(oinkyImg.Bounds().Dy()))
+	drawOptions.GeoM.Scale(oinkyBreite/float64(oinkyImg.Bounds().Dx()), oinkyHöhe/float64(oinkyImg.Bounds().Dy()))
 	drawOptions.GeoM.Rotate(o.rotation)
 	drawOptions.GeoM.Translate(oinkyX, o.y)
 	screen.DrawImage(oinkyImg, &drawOptions)
