@@ -81,18 +81,6 @@ func (b Brett) clone() Brett {
 	}
 }
 
-func (b Brett) zeileFürNeuenVierGewinntSteinFinden(spalte int) (int, bool) {
-	for zeile := 0; zeile < b.höhe; zeile++ {
-		if b.zeilen[zeile][spalte] != feldLeer {
-			if zeile == 0 {
-				return 0, false
-			}
-			return zeile - 1, true
-		}
-	}
-	return b.höhe - 1, true
-}
-
 func (b Brett) vierGewinntSteineZählen() int {
 	var anzahl int
 	for spalte := 0; spalte < b.breite; spalte++ {
@@ -105,43 +93,49 @@ func (b Brett) vierGewinntSteineZählen() int {
 	return anzahl
 }
 
-func (b Brett) hatVierGewinntSpielerInZeileGewonnen() bool {
+func (b Brett) vierGewinntWiederholungenInZeilenZählen(länge int) int {
+	var anzahl int
 	for zeile := 0; zeile < b.höhe; zeile++ {
-		var anzahlSteine int
+		var längeBisher int
 		for spalte := 0; spalte < b.breite; spalte++ {
 			feld := b.zeilen[zeile][spalte]
 			if feld == feldVierGewinntStein {
-				anzahlSteine++
-				if anzahlSteine == 4 {
-					return true
+				längeBisher++
+				if längeBisher == länge {
+					anzahl++
+					längeBisher = 0
 				}
 				continue
 			}
-			anzahlSteine = 0
+			längeBisher = 0
 		}
 	}
-	return false
+	return anzahl
 }
 
-func (b Brett) hatVierGewinntSpielerInSpalteGewonnen() bool {
+func (b Brett) vierGewinntWiederholungenInSpaltenZählen(länge int) int {
+	var anzahl int
 	for spalte := 0; spalte < b.breite; spalte++ {
-		var anzahlSteine int
+		var längeBisher int
 		for zeile := 0; zeile < b.höhe; zeile++ {
 			feld := b.zeilen[zeile][spalte]
 			if feld == feldVierGewinntStein {
-				anzahlSteine++
-				if anzahlSteine == 4 {
-					return true
+				längeBisher++
+				if längeBisher == länge {
+					anzahl++
+					längeBisher = 0
 				}
 				continue
 			}
-			anzahlSteine = 0
+			längeBisher = 0
 		}
 	}
-	return false
+	return anzahl
 }
 
-func (b Brett) hatVierGewinntSpielerDiagonalGewonnen() bool {
+func (b Brett) vierGewinntWiederholungenDiagonalZählen(länge int) int {
+	var anzahl int
+
 	diagonalRichtungen := []struct{ x, y int }{
 		{x: 1, y: -1}, {x: 1, y: 1},
 	}
@@ -150,7 +144,7 @@ func (b Brett) hatVierGewinntSpielerDiagonalGewonnen() bool {
 		for startSpalte := 0; startSpalte < b.breite; startSpalte++ {
 		richtungen:
 			for _, richtung := range diagonalRichtungen {
-				for offset := 0; offset < 4; offset++ {
+				for offset := 0; offset < länge; offset++ {
 					zeile := startZeile + richtung.y*offset
 					spalte := startSpalte + richtung.x*offset
 					if !(position{zeile: zeile, spalte: spalte}).valid(b.breite, b.höhe) {
@@ -162,23 +156,25 @@ func (b Brett) hatVierGewinntSpielerDiagonalGewonnen() bool {
 					}
 				}
 
-				return true
+				anzahl++
 			}
 		}
 	}
 
-	return false
+	return anzahl
+}
+
+func (b Brett) vierGewinntWiederholungenZählen(länge int) int {
+	return b.vierGewinntWiederholungenInZeilenZählen(länge) +
+		b.vierGewinntWiederholungenInSpaltenZählen(länge) +
+		b.vierGewinntWiederholungenDiagonalZählen(länge)
 }
 
 func (b Brett) gewinner(regeln Regeln) (Spieler, bool) {
-	if b.vierGewinntSteineZählen() >= regeln.MaximaleVierGewinntSteine ||
-		len(b.möglicheVierGewinntZüge()) == 0 {
+	if b.vierGewinntSteineZählen() >= regeln.MaximaleVierGewinntSteine {
 		return SpielerSchach, true
 	}
-	if b.hatVierGewinntSpielerInZeileGewonnen() ||
-		b.hatVierGewinntSpielerInSpalteGewonnen() ||
-		b.hatVierGewinntSpielerDiagonalGewonnen() ||
-		len(b.möglicheSchachZüge()) == 0 {
+	if b.vierGewinntWiederholungenZählen(4) >= 1 {
 		return SpielerVierGewinnt, true
 	}
 	return false, false
@@ -186,8 +182,9 @@ func (b Brett) gewinner(regeln Regeln) (Spieler, bool) {
 
 func (b Brett) bewertung(perspektive Spieler, regeln Regeln) int {
 	const (
-		verlorenBewertung = -1000
-		gewonnenBewertung = 1000
+		verlorenBewertung           = -1000
+		gewonnenBewertung           = 1000
+		dreierWiederholungBewertung = 1
 	)
 
 	gewinner, gibtGewinner := b.gewinner(regeln)
@@ -198,7 +195,16 @@ func (b Brett) bewertung(perspektive Spieler, regeln Regeln) int {
 		return verlorenBewertung
 	}
 
-	return 0
+	vierGewinntBewertung := dreierWiederholungBewertung * b.vierGewinntWiederholungenZählen(3)
+
+	switch perspektive {
+	case SpielerVierGewinnt:
+		return vierGewinntBewertung
+	case SpielerSchach:
+		return -vierGewinntBewertung
+	default:
+		panic("unreachable")
+	}
 }
 
 func (b Brett) MinimaxBewertung(perspektive minimax.Spieler, minimaxRegeln minimax.Regeln) int {

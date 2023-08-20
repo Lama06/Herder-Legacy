@@ -155,7 +155,7 @@ func main() {
 						AiStärke:      5,
 						StartBrett:    jacobsalptraum.StandardBrett,
 						Regeln:        jacobsalptraum.StandardRegeln,
-						MenschSpieler: jacobsalptraum.SpielerSchach,
+						MenschSpieler: jacobsalptraum.SpielerVierGewinnt,
 					},
 					func(gewonnen bool) herderlegacy.Screen {
 						log.Println(gewonnen)

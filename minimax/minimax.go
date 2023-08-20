@@ -1,19 +1,9 @@
 // Eine Implementierung des Minimax Algorithmuses: https://de.wikipedia.org/wiki/Minimax-Algorithmus
 package minimax
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
+import (
+	"math/rand"
+)
 
 type Spieler interface {
 	MinimaxGegner() Spieler
@@ -95,7 +85,7 @@ func BesterNächsterZug(brett Brett, regeln Regeln, amZug Spieler, maximaleTiefe
 			amZug.MinimaxGegner(),
 			maximaleTiefe-1,
 		)
-		if besterZug == nil || zugErgebnisBewertung > besterZugBewertung {
+		if besterZug == nil || zugErgebnisBewertung > besterZugBewertung || (zugErgebnisBewertung == besterZugBewertung && rand.Float64() > 0.5) {
 			besterZug = möglicherZug
 			besterZugBewertung = zugErgebnisBewertung
 		}

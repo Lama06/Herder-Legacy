@@ -1,6 +1,8 @@
 package jacobsalptraum
 
-import "github.com/Lama06/Herder-Legacy/minimax"
+import (
+	"github.com/Lama06/Herder-Legacy/minimax"
+)
 
 type zug interface {
 	minimax.Zug
@@ -76,6 +78,18 @@ var schachFigurenZugInfos = map[feld]struct {
 	},
 }
 
+func (b Brett) zeileFürNeuenVierGewinntSteinFinden(spalte int) (int, bool) {
+	for zeile := 0; zeile < b.höhe; zeile++ {
+		if b.zeilen[zeile][spalte] != feldLeer {
+			if zeile == 0 {
+				return 0, false
+			}
+			return zeile - 1, true
+		}
+	}
+	return b.höhe - 1, true
+}
+
 func (b Brett) möglicheVierGewinntZüge() []vierGewinntZug {
 	var züge []vierGewinntZug
 	for spalte := 0; spalte < b.breite; spalte++ {
@@ -93,6 +107,28 @@ func (b Brett) möglicheVierGewinntZüge() []vierGewinntZug {
 		})
 	}
 	return züge
+}
+
+func (b Brett) vierGewinntSteineRunterfallenLassen() {
+	for zeile := b.höhe - 2; zeile >= 0; zeile-- {
+	spalten:
+		for spalte := 0; spalte < b.breite; spalte++ {
+			if b.zeilen[zeile][spalte] != feldVierGewinntStein {
+				continue
+			}
+
+			b.zeilen[zeile][spalte] = feldLeer
+
+			for neueZeile := zeile + 1; neueZeile < b.höhe; neueZeile++ {
+				if b.zeilen[neueZeile][spalte] != feldLeer {
+					b.zeilen[neueZeile-1][spalte] = feldVierGewinntStein
+					continue spalten
+				}
+			}
+
+			b.zeilen[b.höhe-1][spalte] = feldVierGewinntStein
+		}
+	}
 }
 
 func (b Brett) möglicheSchachZüge() []schachZug {
@@ -125,6 +161,7 @@ func (b Brett) möglicheSchachZüge() []schachZug {
 					neuesBrett := b.clone()
 					neuesBrett.zeilen[zeile][spalte] = feldLeer
 					neuesBrett.zeilen[neueZeile][neueSpalte] = feld
+					neuesBrett.vierGewinntSteineRunterfallenLassen()
 					züge = append(züge, schachZug{
 						start:    position{zeile: zeile, spalte: spalte},
 						ziel:     neuePosition,
