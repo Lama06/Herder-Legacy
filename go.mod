@@ -1,6 +1,6 @@
 module github.com/Lama06/Herder-Legacy
 
-go 1.20
+go 1.21
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.5.4

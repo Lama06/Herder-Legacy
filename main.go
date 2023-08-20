@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "image/jpeg"
 	_ "image/png"
+	"log"
 	"runtime"
 
 	"github.com/Lama06/Herder-Legacy/breakout"
@@ -11,6 +12,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/dialog"
 	"github.com/Lama06/Herder-Legacy/flappyoinky"
 	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/jacobsalptraum"
 	"github.com/Lama06/Herder-Legacy/leitstellenspiel"
 	"github.com/Lama06/Herder-Legacy/openworld"
 	"github.com/Lama06/Herder-Legacy/passwortdreher"
@@ -145,6 +147,21 @@ func main() {
 			}),
 			dialog.NewAntwort("Poker Rechner", func() herderlegacy.Screen {
 				return poker.NewPokerRechnerScreen(&herderLegacy, newMenuScreen)
+			}),
+			dialog.NewAntwort("Schach", func() herderlegacy.Screen {
+				return jacobsalptraum.NewSpielScreen(
+					&herderLegacy,
+					jacobsalptraum.SpielConfig{
+						AiStärke:      5,
+						StartBrett:    jacobsalptraum.StandardBrett,
+						Regeln:        jacobsalptraum.StandardRegeln,
+						MenschSpieler: jacobsalptraum.SpielerSchach,
+					},
+					func(gewonnen bool) herderlegacy.Screen {
+						log.Println(gewonnen)
+						return newMenuScreen()
+					},
+				)
 			}),
 		)
 	}
