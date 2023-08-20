@@ -177,7 +177,7 @@ func (b Brett) MinimaxBewertung(perspektive minimax.Spieler, aiRegeln minimax.Re
 }
 
 func (b Brett) feldSize(maxBrettBreite, maxBrettHoehe float64) float64 {
-	return minFloat64(maxBrettBreite/float64(b.spalten), maxBrettHoehe/float64(b.zeilen))
+	return min(maxBrettBreite/float64(b.spalten), maxBrettHoehe/float64(b.zeilen))
 }
 
 func (b Brett) brettSize(maxBrettBreite, maxBrettHoehe float64) (brettBreite, brettHoehe float64) {

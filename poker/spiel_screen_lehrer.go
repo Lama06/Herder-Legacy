@@ -144,7 +144,7 @@ func (s *spielScreenLehrer) gehtMit(
 	einsatz int,
 	callback func(gehtMit bool),
 ) {
-	schmerzgrenze := maxInt(3, s.eigenerEinsatz)
+	schmerzgrenze := max(3, s.eigenerEinsatz)
 	entscheidung := schmerzgrenze >= einsatz
 	if entscheidung {
 		s.eigenerEinsatz += einsatz

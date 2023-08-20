@@ -255,7 +255,7 @@ func (b Brett) möglicheDameBewegenZüge(perspektive spieler, startPosition posi
 
 bewegenRichtungen:
 	for bewegenRichtung := range regeln.DameBewegenRichtungen {
-		for anzahlSchritte := 1; anzahlSchritte < maxInt(b.zeilen, b.spalten); anzahlSchritte++ {
+		for anzahlSchritte := 1; anzahlSchritte < max(b.zeilen, b.spalten); anzahlSchritte++ {
 			neuePosition := startPosition.add(
 				bewegenRichtung.Vertikal.verschiebung(perspektive)*anzahlSchritte,
 				bewegenRichtung.Horizontal.verschiebung(perspektive)*anzahlSchritte,
@@ -304,7 +304,7 @@ func (b Brett) möglicheDameSchlagenZüge(
 
 schlagenRichtungen:
 	for schlagenRichtung := range regeln.dameSchlagenRichtungen(weiterschlagen) {
-		for anzahlSchritte := 1; anzahlSchritte < maxInt(b.zeilen, b.spalten); anzahlSchritte++ {
+		for anzahlSchritte := 1; anzahlSchritte < max(b.zeilen, b.spalten); anzahlSchritte++ {
 			schlagenPosition := startPosition.add(
 				schlagenRichtung.Vertikal.verschiebung(perspektive)*anzahlSchritte,
 				schlagenRichtung.Horizontal.verschiebung(perspektive)*anzahlSchritte,

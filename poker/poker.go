@@ -175,10 +175,3 @@ func (k kartenStapel) karteZiehen() karte {
 	delete(k, karte)
 	return karte
 }
-
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
