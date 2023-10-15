@@ -1,5 +1,13 @@
 package sodoku
 
+import (
+	"image/color"
+	"math/rand"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
+)
+
 type position struct {
 	zeile, spalte int
 }
@@ -54,8 +62,8 @@ func (s sodoku) möglicheZahlen() [9][9]map[byte]struct{} {
 
 			quadratX := (startSpalte / 3) * 3
 			quadratY := (startZeile / 3) * 3
-			for zeile := quadratY; zeile < quadratY+3; quadratY++ {
-				for spalte := quadratX; spalte < quadratX+3; quadratX++ {
+			for zeile := quadratY; zeile < quadratY+3; zeile++ {
+				for spalte := quadratX; spalte < quadratX+3; spalte++ {
 					if s[zeile][spalte] != 0 {
 						continue
 					}
@@ -172,28 +180,111 @@ func (s sodoku) nächstesFreiesFeld(pos position) (position, bool) {
 	return pos, true
 }
 
-func (s sodoku) rekursivLösen(pos position) (sodoku, bool) {
-	for zahl := 1; zahl <= 9; zahl++ {
+func (s sodoku) rekursivLösen(pos position, zufall, alle bool) []sodoku {
+	zahlen := [9]int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	if zufall {
+		rand.Shuffle(len(zahlen), func(i, j int) {
+			zahlen[i], zahlen[j] = zahlen[j], zahlen[i]
+		})
+	}
+
+	var lösungen []sodoku
+	for _, zahl := range zahlen {
 		s[pos.zeile][pos.spalte] = byte(zahl)
 		if s.hatFehler() {
 			continue
 		}
-		nächstesFeld, ok := s.nächstesFreiesFeld(pos)
+		nächstesFeld, ok := pos.nächste()
 		if !ok {
-			return s, true
+			if alle {
+				lösungen = append(lösungen, s)
+				continue
+			} else {
+				return []sodoku{s}
+			}
 		}
-		lösung, ok := s.rekursivLösen(nächstesFeld)
-		if ok {
-			return lösung, true
+		nächstesFreiesFeld, ok := s.nächstesFreiesFeld(nächstesFeld)
+		if !ok {
+			if alle {
+				lösungen = append(lösungen, s)
+				continue
+			} else {
+				return []sodoku{s}
+			}
+		}
+		lösungen = append(lösungen, s.rekursivLösen(nächstesFreiesFeld, zufall, alle)...)
+		if !alle && len(lösungen) == 1 {
+			return lösungen
 		}
 	}
-	return sodoku{}, false
+	return lösungen
 }
 
-func (s sodoku) lösen() (sodoku, bool) {
+func (s sodoku) lösen(zufall, alle bool) []sodoku {
 	ersteFreiePosition, ok := s.nächstesFreiesFeld(position{0, 0})
 	if !ok {
-		return sodoku{}, false
+		if !s.hatFehler() {
+			return []sodoku{s}
+		}
+		return nil
 	}
-	return s.rekursivLösen(ersteFreiePosition)
+	return s.rekursivLösen(ersteFreiePosition, zufall, alle)
+}
+
+func sodokuGenerieren() sodoku {
+	s := sodoku{}.lösen(true, false)[0]
+	for {
+		legalesSodoku := s
+		s[rand.Intn(9)][rand.Intn(9)] = 0
+		if len(s.lösen(false, true)) != 1 {
+			return legalesSodoku
+		}
+	}
+}
+
+type sodokuDrawer struct {
+	x, y, width, height float64
+}
+
+func (s sodoku) draw(screen *ebiten.Image, opt sodokuDrawer) {
+	size := min(opt.width, opt.height)
+	feldSize := size / 9
+	abstandX := (opt.width - size) / 2
+	abstandY := (opt.height - size) / 2
+
+	for zeile := 0; zeile <= 9; zeile++ {
+		strokeWidth := 2
+		if zeile%3 == 0 {
+			strokeWidth = 4
+		}
+		vector.StrokeLine(
+			screen,
+			float32(abstandX), float32(abstandY+float64(zeile)*feldSize),
+			float32(abstandX+size), float32(abstandY+float64(zeile)*feldSize),
+			float32(strokeWidth),
+			color.Black,
+			true,
+		)
+	}
+
+	for spalte := 0; spalte <= 9; spalte++ {
+		strokeWidth := 2
+		if spalte%3 == 0 {
+			strokeWidth = 4
+		}
+		vector.StrokeLine(
+			screen,
+			float32(abstandX+float64(spalte)*feldSize), float32(abstandY),
+			float32(abstandX+float64(spalte)*feldSize), float32(abstandY+size),
+			float32(strokeWidth),
+			color.Black,
+			true,
+		)
+	}
+
+	for zeile := 0; zeile < 9; zeile++ {
+		for spalte := 0; spalte < 9; spalte++ {
+
+		}
+	}
 }
