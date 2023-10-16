@@ -3,8 +3,12 @@ package sodoku
 import (
 	"image/color"
 	"math/rand"
+	"strconv"
 
+	"github.com/Lama06/Herder-Legacy/herderlegacy"
+	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -244,13 +248,24 @@ func sodokuGenerieren() sodoku {
 
 type sodokuDrawer struct {
 	x, y, width, height float64
+	zahlen              [9][9]*ui.Text
 }
 
-func (s sodoku) draw(screen *ebiten.Image, opt sodokuDrawer) {
-	size := min(opt.width, opt.height)
-	feldSize := size / 9
-	abstandX := (opt.width - size) / 2
-	abstandY := (opt.height - size) / 2
+func newSodokuDrawer(x, y, width, height float64) *sodokuDrawer {
+	var zahlen [9][9]*ui.Text
+	for zeile := 0; zeile < 9; zeile++ {
+		for spalte := 0; spalte < 9; spalte++ {
+			zahlen[zeile][spalte] = ui.NewText(ui.TextConfig{})
+		}
+	}
+	return &sodokuDrawer{
+		x: x, y: y, width: width, height: height,
+		zahlen: zahlen,
+	}
+}
+
+func (s *sodokuDrawer) draw(screen *ebiten.Image) {
+	size, feldSize, abstandX, abstandY := s.calculatePosition()
 
 	for zeile := 0; zeile <= 9; zeile++ {
 		strokeWidth := 2
@@ -259,8 +274,8 @@ func (s sodoku) draw(screen *ebiten.Image, opt sodokuDrawer) {
 		}
 		vector.StrokeLine(
 			screen,
-			float32(abstandX), float32(abstandY+float64(zeile)*feldSize),
-			float32(abstandX+size), float32(abstandY+float64(zeile)*feldSize),
+			float32(s.x+abstandX), float32(s.y+abstandY+float64(zeile)*feldSize),
+			float32(s.x+abstandX+size), float32(s.y+abstandY+float64(zeile)*feldSize),
 			float32(strokeWidth),
 			color.Black,
 			true,
@@ -274,8 +289,8 @@ func (s sodoku) draw(screen *ebiten.Image, opt sodokuDrawer) {
 		}
 		vector.StrokeLine(
 			screen,
-			float32(abstandX+float64(spalte)*feldSize), float32(abstandY),
-			float32(abstandX+float64(spalte)*feldSize), float32(abstandY+size),
+			float32(s.x+abstandX+float64(spalte)*feldSize), float32(s.y+abstandY),
+			float32(s.x+abstandX+float64(spalte)*feldSize), float32(s.y+abstandY+size),
 			float32(strokeWidth),
 			color.Black,
 			true,
@@ -284,7 +299,110 @@ func (s sodoku) draw(screen *ebiten.Image, opt sodokuDrawer) {
 
 	for zeile := 0; zeile < 9; zeile++ {
 		for spalte := 0; spalte < 9; spalte++ {
-
+			text := s.zahlen[zeile][spalte]
+			text.Draw(screen)
 		}
 	}
+}
+
+func (s *sodokuDrawer) update(sodoku sodoku) {
+	_, feldSize, abstandX, abstandY := s.calculatePosition()
+
+	for zeile := 0; zeile < 9; zeile++ {
+		for spalte := 0; spalte < 9; spalte++ {
+			text := s.zahlen[zeile][spalte]
+			if sodoku[zeile][spalte] == 0 {
+				text.SetText("")
+			} else {
+				text.SetText(strconv.Itoa(int(sodoku[zeile][spalte])))
+			}
+			text.SetPosition(ui.NewCenteredPosition(
+				s.x+abstandX+float64(spalte)*feldSize+feldSize/2,
+				s.y+abstandY+float64(zeile)*feldSize+feldSize/2,
+			))
+			s.zahlen[zeile][spalte].Update()
+		}
+	}
+}
+
+func (s *sodokuDrawer) calculatePosition() (size, feldSize, abstandX, abstandY float64) {
+	size = min(s.width, s.height)
+	feldSize = size / 9
+	abstandX = (s.width - size) / 2
+	abstandY = (s.height - size) / 2
+	return size, feldSize, abstandX, abstandY
+}
+
+func (s *sodokuDrawer) mausZuKoordinaten(mouseX, mouseY float64) (position, bool) {
+	_, feldSize, abstandX, abstandY := s.calculatePosition()
+	pos := position{
+		zeile:  int((mouseY - (s.y + abstandY)) / feldSize),
+		spalte: int((mouseX - (s.x + abstandX)) / feldSize),
+	}
+	if pos.zeile < 0 || pos.spalte < 0 || pos.zeile >= 9 || pos.spalte >= 9 {
+		return position{}, false
+	}
+	return pos, true
+}
+
+type sodokuScreen struct {
+	herderLegacy herderlegacy.HerderLegacy
+
+	drawer *sodokuDrawer
+	sodoku sodoku
+}
+
+func NewSodokuScreen(herderLegacy herderlegacy.HerderLegacy) herderlegacy.Screen {
+	return &sodokuScreen{
+		herderLegacy: herderLegacy,
+		drawer:       newSodokuDrawer(0, 0, ui.Width, ui.Height),
+		sodoku:       sodokuGenerieren(),
+	}
+}
+
+var _ herderlegacy.Screen = (*sodokuScreen)(nil)
+
+func (s *sodokuScreen) onClick(mausX, mausY int) {
+	pos, ok := s.drawer.mausZuKoordinaten(float64(mausX), float64(mausY))
+	if !ok {
+		return
+	}
+
+	widgets := make([]ui.ListScreenWidget, 9)
+	for i := range widgets {
+		i := i
+		widgets[i] = ui.ListScreenButtonWidget{
+			Text: strconv.Itoa(i + 1),
+			Callback: func() {
+				s.herderLegacy.OpenScreen(s)
+				neuesSodoku := s.sodoku
+				neuesSodoku[pos.zeile][pos.spalte] = byte(i + 1)
+				if !neuesSodoku.hatFehler() {
+					s.sodoku = neuesSodoku
+				}
+			},
+		}
+	}
+	s.herderLegacy.OpenScreen(ui.NewListScreen(s.herderLegacy, ui.ListScreenConfig{
+		Title:   "Zahl setzen",
+		Widgets: widgets,
+		CancelAction: func() herderlegacy.Screen {
+			return s
+		},
+	}))
+}
+
+func (s *sodokuScreen) Update() {
+	s.drawer.update(s.sodoku)
+	if inpututil.IsKeyJustReleased(ebiten.KeyW) && ebiten.IsKeyPressed(ebiten.KeyU) {
+		s.sodoku = s.sodoku.lösen(false, false)[0]
+	}
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		s.onClick(ebiten.CursorPosition())
+	}
+}
+
+func (s *sodokuScreen) Draw(screen *ebiten.Image) {
+	screen.Fill(ui.BackgroundColor)
+	s.drawer.draw(screen)
 }

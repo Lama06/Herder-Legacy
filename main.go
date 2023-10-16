@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
@@ -18,6 +17,7 @@ import (
 	"github.com/Lama06/Herder-Legacy/passwortdreher"
 	"github.com/Lama06/Herder-Legacy/poker"
 	"github.com/Lama06/Herder-Legacy/quiz"
+	"github.com/Lama06/Herder-Legacy/sodoku"
 	"github.com/Lama06/Herder-Legacy/stabwelle"
 	"github.com/Lama06/Herder-Legacy/ui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -141,7 +141,6 @@ func main() {
 			}),
 			dialog.NewAntwort("Poker", func() herderlegacy.Screen {
 				return poker.NewSpielScreen(&herderLegacy, 20, func(jettons int) herderlegacy.Screen {
-					fmt.Println(jettons)
 					return newMenuScreen()
 				})
 			}),
@@ -162,6 +161,9 @@ func main() {
 						return newMenuScreen()
 					},
 				)
+			}),
+			dialog.NewAntwort("Sodoku", func() herderlegacy.Screen {
+				return sodoku.NewSodokuScreen(&herderLegacy)
 			}),
 		)
 	}
